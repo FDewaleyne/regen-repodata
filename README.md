@@ -21,3 +21,17 @@ Options:
                         from the satellite itself. Implies --force
   --cleandb             Get rid of the pending actions before adding the new
                         ones. implies --db and force.
+
+NOTE : --db still requires access to the api to avoid adding channels that should not be generated (channels with no checksum type)
+
+NOTE2 : it is possiblee to store the connection credentials in a configuration file : .satellite or ~/.satellite or /etc/sysconfig/rhn/satellite.
+
+the format of the file should be
+
+    [default]
+    url=https://yoursatellitefqdn/RPC/API
+    [baseorg]
+    username=satellitelogin
+    password=satellitepassword
+
+note that the content in [baseorg] isn't required ; if [default] is missing the configuration file will be ignored.
