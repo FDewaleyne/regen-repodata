@@ -1,8 +1,9 @@
-regen_repodata
+regen\_repodata
 ==============
 
 Script used to cause the events that will trigger a regeneration of repodata in satellite.
 
+~~~
 Usage: regen_repodata.py -c channelname|-l|-a [-f]
  Requests to a satellite that a channel's repodata is regenerated
  satellite 5.3 requires that you use --db or --cleandb
@@ -21,10 +22,10 @@ Options:
                         from the satellite itself. Implies --force
   --cleandb             Get rid of the pending actions before adding the new
                         ones. implies --db and force.
+~~~
+**NOTE** : --db still requires access to the api to avoid adding channels that should not be generated (channels with no checksum type)
 
-NOTE : --db still requires access to the api to avoid adding channels that should not be generated (channels with no checksum type)
-
-NOTE2 : it is possiblee to store the connection credentials in a configuration file : .satellite or ~/.satellite or /etc/sysconfig/rhn/satellite.
+**NOTE2** : it is possible to store the connection credentials in a configuration file : .satellite or ~/.satellite or /etc/sysconfig/rhn/satellite.
 
 the format of the file should be
 
