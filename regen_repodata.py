@@ -13,6 +13,8 @@
 # 2.0.0 : adding options to use the DB instead of the api (sat 5.3 and ways to clear the jobs)
 # 2.0.1 : last bugs ironed out with queueing all channels using the new filter
 # 2.0.2 : bug fixed where regenerating one channel with --db would not properly be treated.
+# 2.0.2b : fixed typo in usage info
+# 2.0.3 : moving url to default
 
 ###
 # To the extent possible under law, Red Hat, Inc. has dedicated all copyright to this software to the public domain worldwide, pursuant to the CC0 Public Domain Dedication. 
@@ -33,17 +35,17 @@ def session_init(orgname='baseorg'):
     global client;
     global config;
     global SATELLITE_LOGIN;
-    if config.has_section(orgname) and config.has_option(orgname,'username') and config.has_option(orgname,'password') and config.has_option('baseorg','url'):
+    if config.has_section("default") and config.has_section(orgname) and config.has_option(orgname,'username') and config.has_option(orgname,'password') and config.has_option('default','url'):
         SATELLITE_LOGIN = config.get(orgname,'username')
         SATELLITE_PASSWORD = config.get(orgname,'password')
-        SATELLITE_URL = config.get('baseorg','url')
+        SATELLITE_URL = config.get('default','url')
     else:
-        if not config.has_option('baseorg','url'):
+        if not config.has_section("default") and not config.has_option('default','url'):
             sys.stderr.write("enter the satellite url, such as https://satellite.example.com/rpc/api")
             sys.stderr.write("\n")
             SATELLITE_URL = raw_input().strip()
         else:
-            SATELLITE_URL = config.get('baseorg','url')
+            SATELLITE_URL = config.get('default','url')
         sys.stderr.write("Login details for %s\n\n" % SATELLITE_URL)
         sys.stderr.write("Login: ")
         SATELLITE_LOGIN = raw_input().strip()
@@ -173,7 +175,7 @@ def regen_channel_db(key,channels=(), clean_db=False):
     pass
 
 def main():
-    parser = optparse.OptionParser("usage : %prog -c channelname|-l|-a [-f]\n Requests to a satellite that a channel's repodata is regenerated\n satellite 5.3 requires that you use --db or --cleandb\n RHEL4 channels (and anterior) do not need their repodata to be generated to work.")
+    parser = optparse.OptionParser("%prog -c channelname|-l|-a [-f]\n Requests to a satellite that a channel's repodata is regenerated\n satellite 5.3 requires that you use --db or --cleandb\n RHEL4 channels (and anterior) do not need their repodata to be generated to work.")
     parser.add_option("-l", "--list", dest="listing", help="List all channels and quit", action="store_true")
     parser.add_option("-c", "--channel", dest="channel", help="Label of the channel to querry regeneration for")
     parser.add_option("-a", "--all", action="store_true",dest="regen_all",help="Causes a global regeneration instead of just one channel")
