@@ -15,7 +15,7 @@
 # 2.0.2 : bug fixed where regenerating one channel with --db would not properly be treated.
 # 2.0.2b : fixed typo in usage info
 # 2.0.3 : moving url to default
-
+# 2.1.0 : added support for passing url and username into the command line directly
 ###
 # To the extent possible under law, Red Hat, Inc. has dedicated all copyright to this software to the public domain worldwide, pursuant to the CC0 Public Domain Dedication. 
 # This software is distributed without any warranty.  See <http://creativecommons.org/publicdomain/zero/1.0/>.
@@ -31,14 +31,19 @@ config.read(['.satellite', os.path.expanduser('~/.satellite'), '/etc/sysconfig/r
 
 # this will initialize a session and return its key.
 # for security reason the password is removed from memory before exit, but we want to keep the current username.
-def session_init(orgname='baseorg'):
+def session_init(orgname='baseorg', settings=None ):
     global client;
     global config;
     global SATELLITE_LOGIN;
-    if config.has_section("default") and config.has_section(orgname) and config.has_option(orgname,'username') and config.has_option(orgname,'password') and config.has_option('default','url'):
+    #TODO: add transformation for this
+    if settings != None:
+        SATELLITE_URL = settings['url']
+        SATELLITE_LOGIN = settings['login']
+        SATELLITE_PASSWORd = settings['password']
+    elif config.has_section("default") and config.has_section(orgname) and config.has_option(orgname,'username') and config.has_option(orgname,'password') and config.has_option('default','url'):
+        SATELLITE_URL = config.get('default','url')
         SATELLITE_LOGIN = config.get(orgname,'username')
         SATELLITE_PASSWORD = config.get(orgname,'password')
-        SATELLITE_URL = config.get('default','url')
     else:
         if not config.has_section("default") and not config.has_option('default','url'):
             sys.stderr.write("enter the satellite url, such as https://satellite.example.com/rpc/api")
@@ -183,6 +188,9 @@ def main():
     parser.add_option("-f", "--force", action="store_true",dest="force_operation",help="Forces the operation ; can only work if the script is run on the satellite itself",default=False)
     parser.add_option("--db", action="store_true", dest="use_db", help="Use the database instead of the api ; can only be used from the satellite itself. Implies --force",default=False)
     parser.add_option("--cleandb", action="store_true", dest="clean_db", help="Get rid of the pending actions before adding the new ones. implies --db and force.", default=False)
+    parser.add_option("--url", dest="saturl", help="URL of the satellite api, e.g. https://satellite.example.com/rpc/api or http://127.0.0.1/rpc/api. Facultative")
+    parser.add_option("--user", dest="satuser", help="username to use with the satellite. Should be admin of the organization owning the channels. Faculative")
+    parser.add_option("--password", dest="satpwd", help="password of the user. Will be asked if not given")
     (options, args) = parser.parse_args()
     if options.listing:
         key = session_init()
