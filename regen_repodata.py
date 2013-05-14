@@ -175,6 +175,7 @@ def regen_channel_db(key,channels=(), clean_db=False):
     pass
 
 def main():
+    global client;
     parser = optparse.OptionParser("%prog -c channelname|-l|-a [-f]\n Requests to a satellite that a channel's repodata is regenerated\n satellite 5.3 requires that you use --db or --cleandb\n RHEL4 channels (and anterior) do not need their repodata to be generated to work.")
     parser.add_option("-l", "--list", dest="listing", help="List all channels and quit", action="store_true")
     parser.add_option("-c", "--channel", dest="channel", help="Label of the channel to querry regeneration for")
