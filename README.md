@@ -22,6 +22,12 @@ Options:
                         from the satellite itself. Implies --force
   --cleandb             Get rid of the pending actions before adding the new
                         ones. implies --db and force.
+  --url=SATURL          URL of the satellite api, e.g.
+                        https://satellite.example.com/rpc/api or
+                        http://127.0.0.1/rpc/api. Facultative
+  --user=SATUSER        username to use with the satellite. Should be admin of
+                        the organization owning the channels. Faculative
+  --password=SATPWD     password of the user. Will be asked if not given
 ~~~
 **NOTE** : --db still requires access to the api to avoid adding channels that should not be generated (channels with no checksum type)
 

@@ -188,9 +188,9 @@ def main():
     parser.add_option("-f", "--force", action="store_true",dest="force_operation",help="Forces the operation ; can only work if the script is run on the satellite itself",default=False)
     parser.add_option("--db", action="store_true", dest="use_db", help="Use the database instead of the api ; can only be used from the satellite itself. Implies --force",default=False)
     parser.add_option("--cleandb", action="store_true", dest="clean_db", help="Get rid of the pending actions before adding the new ones. implies --db and force.", default=False)
-    parser.add_option("--url", dest="saturl", help="URL of the satellite api, e.g. https://satellite.example.com/rpc/api or http://127.0.0.1/rpc/api. Facultative")
-    parser.add_option("--user", dest="satuser", help="username to use with the satellite. Should be admin of the organization owning the channels. Faculative")
-    parser.add_option("--password", dest="satpwd", help="password of the user. Will be asked if not given")
+    parser.add_option("--url", dest="saturl",default=None, help="URL of the satellite api, e.g. https://satellite.example.com/rpc/api or http://127.0.0.1/rpc/api. Facultative")
+    parser.add_option("--user", dest="satuser",default=None, help="username to use with the satellite. Should be admin of the organization owning the channels. Faculative")
+    parser.add_option("--password", dest="satpwd",default=None, help="password of the user. Will be asked if not given")
     (options, args) = parser.parse_args()
     if options.listing:
         key = session_init()
