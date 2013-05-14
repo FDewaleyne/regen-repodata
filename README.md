@@ -41,4 +41,4 @@ the format of the file should be
     username=satellitelogin
     password=satellitepassword
 
-note that the content in [baseorg] isn't required ; if [default] is missing the configuration file will be ignored.
+note that the content in `[baseorg]` isn't required ; if `[default]` is missing the configuration file will be ignored.
