@@ -29,9 +29,9 @@ Options:
                         the organization owning the channels. Faculative
   --password=SATPWD     password of the user. Will be asked if not given
 ~~~
-**NOTE** : --db still requires access to the api to avoid adding channels that should not be generated (channels with no checksum type)
+**NOTE** : `--db`  still requires access to the api to avoid adding channels that should not be generated (channels with no checksum type)
 
-**NOTE2** : it is possible to store the connection credentials in a configuration file : .satellite or ~/.satellite or /etc/sysconfig/rhn/satellite.
+**NOTE2** : it is possible to store the connection credentials in a configuration file : `.satellite` or `~/.satellite` or `/etc/sysconfig/rhn/satellite`.
 
 the format of the file should be
 
