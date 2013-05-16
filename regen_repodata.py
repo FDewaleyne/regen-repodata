@@ -38,8 +38,10 @@ def session_init(orgname='baseorg', settings=None ):
     #TODO: add transformation for this
     if settings != None:
         SATELLITE_URL = settings['url']
-        SATELLITE_LOGIN = settings['login']
-        SATELLITE_PASSWORd = settings['password']
+        if 'login' in settings and settings['login'] != None:
+            SATELLITE_LOGIN = settings['login']
+            if 'password' in settings and settings['password'] != None:
+            SATELLITE_PASSWORD = settings['password']
     elif config.has_section("default") and config.has_section(orgname) and config.has_option(orgname,'username') and config.has_option(orgname,'password') and config.has_option('default','url'):
         SATELLITE_URL = config.get('default','url')
         SATELLITE_LOGIN = config.get(orgname,'username')
@@ -191,26 +193,27 @@ def main():
     parser.add_option("--url", dest="saturl",default=None, help="URL of the satellite api, e.g. https://satellite.example.com/rpc/api or http://127.0.0.1/rpc/api. Facultative")
     parser.add_option("--user", dest="satuser",default=None, help="username to use with the satellite. Should be admin of the organization owning the channels. Faculative")
     parser.add_option("--password", dest="satpwd",default=None, help="password of the user. Will be asked if not given")
+    parser.add_option("--org", dest="satorg", default="baseorg", help="name of the organization to use - design the section of the config file to use"
     (options, args) = parser.parse_args()
     if options.listing:
-        key = session_init()
+        key = session_init(options.satorg , {"url" : options.url, "login" : options.satuser, "password" : options.satpwd})
         print_channels(key)
         client.auth.logout(key)
     elif options.use_db or options.clean_db:
         if not options.channel and not options.regen_all:
             parser.error('no channel mentioned')
         elif options.regen_all:
-            key = session_init()
+            key = session_init(options.satorg , {"url" : options.url, "login" : options.satuser, "password" : options.satpwd})
             regen_channel_db(key,select_channels(key), options.clean_db)
         else:
-            key = session_init()
+            key = session_init(options.satorg , {"url" : options.url, "login" : options.satuser, "password" : options.satpwd})
             regen_channel_db(key,[options.channel],options.clean_db)
     elif options.regen_all:
-        key = session_init()
+        key = session_init(options.satorg , {"url" : options.url, "login" : options.satuser, "password" : options.satpwd})
         regen_channel(key,options.force_operation)
         client.auth.logout(key)
     elif options.channel:
-        key = session_init()
+        key = session_init(options.satorg , {"url" : options.url, "login" : options.satuser, "password" : options.satpwd})
         regen_channel(key,options.force_operation,options.channel)
         client.auth.logout(key)
     else:
