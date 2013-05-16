@@ -31,23 +31,25 @@ config.read(['.satellite', os.path.expanduser('~/.satellite'), '/etc/sysconfig/r
 
 # this will initialize a session and return its key.
 # for security reason the password is removed from memory before exit, but we want to keep the current username.
-def session_init(orgname='baseorg', settings=None ):
+def session_init(orgname='baseorg', settings={} ):
     global client;
     global config;
     global SATELLITE_LOGIN;
     #TODO: add transformation for this
-    if settings != None:
+    if 'url' in settings and settings['url'] != None:
         SATELLITE_URL = settings['url']
         if 'login' in settings and settings['login'] != None:
             SATELLITE_LOGIN = settings['login']
             if 'password' in settings and settings['password'] != None:
-            SATELLITE_PASSWORD = settings['password']
-    elif config.has_section("default") and config.has_section(orgname) and config.has_option(orgname,'username') and config.has_option(orgname,'password') and config.has_option('default','url'):
+                SATELLITE_PASSWORD = settings['password']
+            else:
+                SATELLITE_PASSWORD = getpass.getpass(prompt="Password=")
+    if not 'login' in settings and config.has_section("default") and config.has_section(orgname) and config.has_option(orgname,'username') and config.has_option(orgname,'password') and config.has_option('default','url'):
         SATELLITE_URL = config.get('default','url')
         SATELLITE_LOGIN = config.get(orgname,'username')
         SATELLITE_PASSWORD = config.get(orgname,'password')
     else:
-        if not config.has_section("default") and not config.has_option('default','url'):
+        if not config.has_section("default") and not config.has_option('default','url') and not 'url' in settings:
             sys.stderr.write("enter the satellite url, such as https://satellite.example.com/rpc/api")
             sys.stderr.write("\n")
             SATELLITE_URL = raw_input().strip()
