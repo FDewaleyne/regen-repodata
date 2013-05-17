@@ -195,7 +195,7 @@ def main():
     parser.add_option("--url", dest="saturl",default=None, help="URL of the satellite api, e.g. https://satellite.example.com/rpc/api or http://127.0.0.1/rpc/api. Facultative")
     parser.add_option("--user", dest="satuser",default=None, help="username to use with the satellite. Should be admin of the organization owning the channels. Faculative")
     parser.add_option("--password", dest="satpwd",default=None, help="password of the user. Will be asked if not given")
-    parser.add_option("--org", dest="satorg", default="baseorg", help="name of the organization to use - design the section of the config file to use"
+    parser.add_option("--org", dest="satorg", default="baseorg", help="name of the organization to use - design the section of the config file to use")
     (options, args) = parser.parse_args()
     if options.listing:
         key = session_init(options.satorg , {"url" : options.url, "login" : options.satuser, "password" : options.satpwd})
