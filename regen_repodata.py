@@ -198,24 +198,24 @@ def main():
     parser.add_option("--org", dest="satorg", default="baseorg", help="name of the organization to use - design the section of the config file to use")
     (options, args) = parser.parse_args()
     if options.listing:
-        key = session_init(options.satorg , {"url" : options.url, "login" : options.satuser, "password" : options.satpwd})
+        key = session_init(options.satorg , {"url" : options.saturl, "login" : options.satuser, "password" : options.satpwd})
         print_channels(key)
         client.auth.logout(key)
     elif options.use_db or options.clean_db:
         if not options.channel and not options.regen_all:
             parser.error('no channel mentioned')
         elif options.regen_all:
-            key = session_init(options.satorg , {"url" : options.url, "login" : options.satuser, "password" : options.satpwd})
+            key = session_init(options.satorg , {"url" : options.saturl, "login" : options.satuser, "password" : options.satpwd})
             regen_channel_db(key,select_channels(key), options.clean_db)
         else:
-            key = session_init(options.satorg , {"url" : options.url, "login" : options.satuser, "password" : options.satpwd})
+            key = session_init(options.satorg , {"url" : options.saturl, "login" : options.satuser, "password" : options.satpwd})
             regen_channel_db(key,[options.channel],options.clean_db)
     elif options.regen_all:
-        key = session_init(options.satorg , {"url" : options.url, "login" : options.satuser, "password" : options.satpwd})
+        key = session_init(options.satorg , {"url" : options.saturl, "login" : options.satuser, "password" : options.satpwd})
         regen_channel(key,options.force_operation)
         client.auth.logout(key)
     elif options.channel:
-        key = session_init(options.satorg , {"url" : options.url, "login" : options.satuser, "password" : options.satpwd})
+        key = session_init(options.satorg , {"url" : options.saturl, "login" : options.satuser, "password" : options.satpwd})
         regen_channel(key,options.force_operation,options.channel)
         client.auth.logout(key)
     else:
