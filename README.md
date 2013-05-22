@@ -1,10 +1,10 @@
-regen\_repodata
+regen\-repodata
 ==============
 
 Script used to cause the events that will trigger a regeneration of repodata in satellite.
 
 ~~~
-Usage: regen_repodata.py -c channelname|-l|-a [-f]
+Usage: regen-repodata.py -c channelname|-l|-a [-f]
  Requests to a satellite that a channel's repodata is regenerated
  satellite 5.3 requires that you use --db or --cleandb
  RHEL4 channels (and anterior) do not need their repodata to be generated to work.
