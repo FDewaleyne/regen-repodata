@@ -53,7 +53,7 @@ def session_init(orgname='baseorg', settings={} ):
         sys.stderr.write("Login: ")
         SATELLITE_LOGIN = raw_input().strip()
     if 'password' in settings:
-        SATELLITE_PASASWORD = settings['password']
+        SATELLITE_PASSWORD = settings['password']
     elif config.has_section(orgname) and config.has_option(orgname, 'password'):
         SATELLITE_PASSWORD = config.get(orgname, 'password')
     else:
