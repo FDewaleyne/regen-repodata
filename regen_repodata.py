@@ -35,30 +35,28 @@ def session_init(orgname='baseorg', settings={} ):
     global client;
     global config;
     global SATELLITE_LOGIN;
-    #TODO: add transformation for this
-    if 'url' in settings and settings['url'] != None:
+    if 'url' in settings:
         SATELLITE_URL = settings['url']
-        if 'login' in settings and settings['login'] != None:
-            SATELLITE_LOGIN = settings['login']
-            if 'password' in settings and settings['password'] != None:
-                SATELLITE_PASSWORD = settings['password']
-            else:
-                SATELLITE_PASSWORD = getpass.getpass(prompt="Password=")
-    if not 'login' in settings and config.has_section("default") and config.has_section(orgname) and config.has_option(orgname,'username') and config.has_option(orgname,'password') and config.has_option('default','url'):
+    elif config.has_section('default') and config.has_option('default', 'url'):
         SATELLITE_URL = config.get('default','url')
-        SATELLITE_LOGIN = config.get(orgname,'username')
-        SATELLITE_PASSWORD = config.get(orgname,'password')
     else:
-        if not config.has_section("default") and not config.has_option('default','url') and not 'url' in settings:
-            sys.stderr.write("enter the satellite url, such as https://satellite.example.com/rpc/api")
-            sys.stderr.write("\n")
-            SATELLITE_URL = raw_input().strip()
-        else:
-            SATELLITE_URL = config.get('default','url')
+        sys.stderr.write("enter the satellite url, such as https://satellite.example.com/rpc/api")
+        sys.stderr.write("\n")
+        SATELLITE_URL = raw_input().strip()
+    #TODO: add transformation when the url is not ending in /rpc/api and when it doesn't start with http or https
+    if 'login' in settings:
+        SATELLITE_LOGIN = settings['login']
+    elif config.has_section(orgname) and config.has_option(orgname, 'username'):
+        SATELLITE_LOGIN = config.get(orgname, 'username')
+    else:
         sys.stderr.write("Login details for %s\n\n" % SATELLITE_URL)
         sys.stderr.write("Login: ")
         SATELLITE_LOGIN = raw_input().strip()
-        # Get password for the user
+    if 'password' in settings:
+        SATELLITE_PASASWORD = settings['password']
+    elif config.has_section(orgname) and config.has_option(orgname, 'password'):
+        SATELLITE_PASSWORD = config.get(orgname, 'password')
+    else:
         SATELLITE_PASSWORD = getpass.getpass(prompt="Password: ")
         sys.stderr.write("\n")
     #inits the connection
