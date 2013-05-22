@@ -69,10 +69,14 @@ def session_init(orgname='baseorg', settings={} ):
 def print_channels(key):
     global client;
     print "Channels:"
-    print ("%40s | %s" %  ("Label", "Name"))
+    print ("  %42s | %10s | %s" %  ("Label", "Checksum", "Name"))
     try:
         for channel in client.channel.listSoftwareChannels(key):
-            print ("%40s | %s" % (channel['label'] ,channel['name']))
+            details = client.channel.software.getDetails(key,channel['label'])
+            if 'checksum_label' in details :
+                print ("  %42s | %10s | %s" % (channel['label'], details['checksum_label'] ,channel['name']))
+            else:
+                print ("  %42s | %10s | %s" % (channel['label'], "" ,channel['name']))
     except:
             warnings.warn("error trying to list channels")
             raise
@@ -83,9 +87,12 @@ def select_channels(key):
     channels = []
     for channel in client.channel.listSoftwareChannels(key):
         ch = client.channel.software.getDetails(key,channel['label'])
-        #does this have a checksum? if it's sha256 or md5sum let's process the channel
-        if ch['checksum_label'] in ('sha256','md5sum'):
+        if 'checksum_label' in ch and ch['checksum_label'] in ('sha256','sha1','sha384','sha512'):
             channels.append(ch['label'])
+        elif 'checksum_label':
+            print "unknown checksum "+ch['label']+" please report to maintainer"
+        else:
+            print "no checksum type - ignoring "+ch['label']
     return channels
 
 def regen_channel(key,force,channel=None):
