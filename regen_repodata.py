@@ -1,21 +1,19 @@
 #!/usr/bin/python
 
 #author : Felix Dewaleyne
+__author__ = "Felix Dewaleyne"
+__credits__ = ["Felix Dewaleyne"]
+__license__ = "GPL"
+__version__ = "3.0.0"
+__maintainer__ = "Felix Dewaleyne"
+__email__ = "fdewaley@redhat.com"
+__status__ = "Production"
 
-# version : 2.0.2
 ##
 # will work for 5.4 and 5.5
 # will work for 5.3 only if using the database options (--db --cleandb)
-##History
-# 1.2 : fixed genation of the repodata for all channels and moved to using warnings.warn for warnings
-# 1.2.1 : it can't work for 5.3 as the main call used isn't part of the api.
-# 1.2.2 : inclusion of patches suggested (change the timestamps instead of removing the repodata)
-# 2.0.0 : adding options to use the DB instead of the api (sat 5.3 and ways to clear the jobs)
-# 2.0.1 : last bugs ironed out with queueing all channels using the new filter
-# 2.0.2 : bug fixed where regenerating one channel with --db would not properly be treated.
-# 2.0.2b : fixed typo in usage info
-# 2.0.3 : moving url to default
-# 2.1.0 : added support for passing url and username into the command line directly
+##
+
 ###
 # To the extent possible under law, Red Hat, Inc. has dedicated all copyright to this software to the public domain worldwide, pursuant to the CC0 Public Domain Dedication. 
 # This software is distributed without any warranty.  See <http://creativecommons.org/publicdomain/zero/1.0/>.
@@ -188,9 +186,9 @@ def regen_channel_db(key,channels=(), clean_db=False):
         raise 
     pass
 
-def main():
+def main(version):
     global client;
-    parser = optparse.OptionParser("%prog -c channelname|-l|-a [-f]\n Requests to a satellite that a channel's repodata is regenerated\n satellite 5.3 requires that you use --db or --cleandb\n RHEL4 channels (and anterior) do not need their repodata to be generated to work.")
+    parser = optparse.OptionParser("%prog -c channelname|-l|-a [-f]\n Requests to a satellite that a channel's repodata is regenerated\n satellite 5.3 requires that you use --db or --cleandb\n RHEL4 channels (and anterior) do not need their repodata to be generated to work.", version=version)
     parser.add_option("-l", "--list", dest="listing", help="List all channels and quit", action="store_true")
     parser.add_option("-c", "--channel", dest="channel", help="Label of the channel to querry regeneration for")
     parser.add_option("-a", "--all", action="store_true",dest="regen_all",help="Causes a global regeneration instead of just one channel")
@@ -228,4 +226,4 @@ def main():
 
 #calls start here
 if __name__=="__main__":
-    main()
+    main(__version__)
