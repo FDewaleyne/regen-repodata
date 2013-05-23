@@ -10,6 +10,7 @@ Usage: regen-repodata.py -c channelname|-l|-a [-f]
  RHEL4 channels (and anterior) do not need their repodata to be generated to work.
 
 Options:
+  --version             show program's version number and exit
   -h, --help            show this help message and exit
   -l, --list            List all channels and quit
   -c CHANNEL, --channel=CHANNEL
@@ -24,10 +25,15 @@ Options:
                         ones. implies --db and force.
   --url=SATURL          URL of the satellite api, e.g.
                         https://satellite.example.com/rpc/api or
-                        http://127.0.0.1/rpc/api. Facultative
+                        http://127.0.0.1/rpc/api ; can also be just the
+                        hostname or ip of the satellite. Facultative.
   --user=SATUSER        username to use with the satellite. Should be admin of
-                        the organization owning the channels. Faculative
-  --password=SATPWD     password of the user. Will be asked if not given
+                        the organization owning the channels. Faculative.
+  --password=SATPWD     password of the user. Will be asked if not given and
+                        not in the configuration file.
+  --org=SATORG          name of the organization to use - design the section
+                        of the config file to use. Facultative, defaults to
+                        baseorg
 ~~~
 **NOTE** : `--db`  still requires access to the api to avoid adding channels that should not be generated (channels with no checksum type)
 

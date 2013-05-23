@@ -8,7 +8,7 @@
 __author__ = "Felix Dewaleyne"
 __credits__ = ["Felix Dewaleyne"]
 __license__ = "GPL"
-__version__ = "3.0.0"
+__version__ = "3.0.1"
 __maintainer__ = "Felix Dewaleyne"
 __email__ = "fdewaley@redhat.com"
 __status__ = "Production"
@@ -37,7 +37,7 @@ def session_init(orgname='baseorg', settings={} ):
     global client;
     global config;
     global SATELLITE_LOGIN;
-    if 'url' in settings:
+    if 'url' in settings and not settings['url'] == None:
         SATELLITE_URL = settings['url']
     elif config.has_section('default') and config.has_option('default', 'url'):
         SATELLITE_URL = config.get('default','url')
@@ -51,7 +51,7 @@ def session_init(orgname='baseorg', settings={} ):
             SATELLITE_URL = "https://"+SATELLITE_URL
         if re.search('/rpc/api$', SATELLITE_URL) == None:
             SATELLITE_URL = SATELLITE_URL+"/rpc/api"
-    if 'login' in settings:
+    if 'login' in settings and not settings['login'] == None:
         SATELLITE_LOGIN = settings['login']
     elif config.has_section(orgname) and config.has_option(orgname, 'username'):
         SATELLITE_LOGIN = config.get(orgname, 'username')
@@ -59,7 +59,7 @@ def session_init(orgname='baseorg', settings={} ):
         sys.stderr.write("Login details for %s\n\n" % SATELLITE_URL)
         sys.stderr.write("Login: ")
         SATELLITE_LOGIN = raw_input().strip()
-    if 'password' in settings:
+    if 'password' in settings and not settings['password'] == None:
         SATELLITE_PASSWORD = settings['password']
     elif config.has_section(orgname) and config.has_option(orgname, 'password'):
         SATELLITE_PASSWORD = config.get(orgname, 'password')
@@ -204,10 +204,10 @@ def main(version):
     parser.add_option("-f", "--force", action="store_true",dest="force_operation",help="Forces the operation ; can only work if the script is run on the satellite itself",default=False)
     parser.add_option("--db", action="store_true", dest="use_db", help="Use the database instead of the api ; can only be used from the satellite itself. Implies --force",default=False)
     parser.add_option("--cleandb", action="store_true", dest="clean_db", help="Get rid of the pending actions before adding the new ones. implies --db and force.", default=False)
-    parser.add_option("--url", dest="saturl",default=None, help="URL of the satellite api, e.g. https://satellite.example.com/rpc/api or http://127.0.0.1/rpc/api. Facultative")
-    parser.add_option("--user", dest="satuser",default=None, help="username to use with the satellite. Should be admin of the organization owning the channels. Faculative")
-    parser.add_option("--password", dest="satpwd",default=None, help="password of the user. Will be asked if not given")
-    parser.add_option("--org", dest="satorg", default="baseorg", help="name of the organization to use - design the section of the config file to use")
+    parser.add_option("--url", dest="saturl",default=None, help="URL of the satellite api, e.g. https://satellite.example.com/rpc/api or http://127.0.0.1/rpc/api ; can also be just the hostname or ip of the satellite. Facultative.")
+    parser.add_option("--user", dest="satuser",default=None, help="username to use with the satellite. Should be admin of the organization owning the channels. Faculative.")
+    parser.add_option("--password", dest="satpwd",default=None, help="password of the user. Will be asked if not given and not in the configuration file.")
+    parser.add_option("--org", dest="satorg", default="baseorg", help="name of the organization to use - design the section of the config file to use. Facultative, defaults to %default")
     (options, args) = parser.parse_args()
     if options.listing:
         key = session_init(options.satorg , {"url" : options.saturl, "login" : options.satuser, "password" : options.satpwd})
