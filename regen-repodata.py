@@ -1,6 +1,10 @@
 #!/usr/bin/python
 
-#author : Felix Dewaleyne
+####
+#
+# Meant to help debug repodata generation issues ; this script will query the regeneration of the repodata through api or through an entry in the db.
+#
+####
 __author__ = "Felix Dewaleyne"
 __credits__ = ["Felix Dewaleyne"]
 __license__ = "GPL"
@@ -41,7 +45,12 @@ def session_init(orgname='baseorg', settings={} ):
         sys.stderr.write("enter the satellite url, such as https://satellite.example.com/rpc/api")
         sys.stderr.write("\n")
         SATELLITE_URL = raw_input().strip()
-    #TODO: add transformation when the url is not ending in /rpc/api and when it doesn't start with http or https
+    #format the url if a part is missing
+    if re.match('^http(s)?://[\w\-.]+/rpc/api',SATELLITE_URL) == None:
+        if re.search('^http(s)?://', SATELLITE_URL) == None:
+            SATELLITE_URL = "https://"+SATELLITE_URL
+        if re.search('/rpc/api$', SATELLITE_URL) == None:
+            SATELLITE_URL = SATELLITE_URL+"/rpc/api"
     if 'login' in settings:
         SATELLITE_LOGIN = settings['login']
     elif config.has_section(orgname) and config.has_option(orgname, 'username'):
