@@ -8,10 +8,10 @@
 __author__ = "Felix Dewaleyne"
 __credits__ = ["Felix Dewaleyne"]
 __license__ = "GPL"
-__version__ = "3.0.1"
+__version__ = "3.0.2"
 __maintainer__ = "Felix Dewaleyne"
 __email__ = "fdewaley@redhat.com"
-__status__ = "Production"
+__status__ = "Dev"
 
 ##
 # will work for 5.4 and 5.5
@@ -23,7 +23,7 @@ __status__ = "Production"
 # This software is distributed without any warranty.  See <http://creativecommons.org/publicdomain/zero/1.0/>.
 ###
 
-import xmlrpclib, sys, getpass, ConfigParser, os, optparse, warnings, stat, re
+import xmlrpclib, sys, getpass, ConfigParser, os, optparse, stat, re
 
 #global variables
 client=None;
@@ -85,7 +85,7 @@ def print_channels(key):
             else:
                 print ("  %42s | %10s | %s" % (channel['label'], "" ,channel['name']))
     except:
-            warnings.warn("error trying to list channels")
+            sys.stderr.write("error trying to list channels")
             raise
 
 def select_channels(key):
@@ -122,13 +122,13 @@ def regen_channel(key,force,channel=None):
                 client.channel.software.regenerateYumCache(key,entry)
                 print "successfully queued "+entry
             except:
-                warnings.warn("error trying to request the repodata regeneration for "+entry)
+                sys.stderr.write("error trying to request the repodata regeneration for "+entry)
                 pass
         try:
             client.channel.software.regenerateNeededCache(key)
             print "errata and package cache for all systems has been regenerated"
         except:
-            warnings.warn("an exception occured durring the regenerateNeededCache call!")
+            sys.stderr.write("an exception occured durring the regenerateNeededCache call!")
             raise
     else:
         print "requesting that the repodata would be regenerated for "+channel
@@ -136,13 +136,13 @@ def regen_channel(key,force,channel=None):
             client.channel.software.regenerateYumCache(key,channel)
             print "repodata should regenerate over the next 15 minutes for "+channel
         except:
-            warnings.warn( "error trying to request the repodata regeneration for "+channel)
+            sys.stderr.write( "error trying to request the repodata regeneration for "+channel)
             raise
         try:
             client.channel.software.regenerateNeededCache(key,channel)
             print "errata and package cache for all systems subscribed to channel "+channel+" has been regenerated"
         except:
-            warnings.warn( "an exception occured durring the regenerateNeededCache call!")
+            sys.stderr.write( "an exception occured durring the regenerateNeededCache call!")
             raise
  
 def setback_repomd_timestamp(repocache_path):
@@ -153,8 +153,8 @@ def setback_repomd_timestamp(repocache_path):
     try:
         os.utime(repomd_file, (new_mtime, new_mtime))
     except OSError, e:
-        warnings.warn("error setting back timestamp on %s: %s" % (repomd_file, e.strerror))
-        warnings.warn("if the file does not exist ignore this error")
+        sys.stderr.write("error setting back timestamp on %s: %s" % (repomd_file, e.strerror))
+        sys.stderr.write("if the file does not exist ignore this error")
         pass
 
 def regen_channel_db(key,channels=(), clean_db=False):
@@ -191,7 +191,7 @@ def regen_channel_db(key,channels=(), clean_db=False):
         client.channel.software.regenerateNeededCache(key)
         print "errata and package cache for all systems has been regenerated"
     except:
-        warnings.warn("an exception occured durring the regenerateNeededCache call!")
+        sys.stderr.write("an exception occured durring the regenerateNeededCache call!")
         raise 
     pass
 
