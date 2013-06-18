@@ -23,7 +23,9 @@ __status__ = "Dev"
 # This software is distributed without any warranty.  See <http://creativecommons.org/publicdomain/zero/1.0/>.
 ###
 
-import xmlrpclib, sys, getpass, ConfigParser, os, optparse, stat, re
+import xmlrpclib, sys, getpass, ConfigParser, os, optparse, re
+# import stat as well for the repodata file time edit
+import stat
 
 #global variables
 client=None;
