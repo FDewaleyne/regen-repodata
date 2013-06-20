@@ -98,10 +98,10 @@ def select_channels(key):
         ch = client.channel.software.getDetails(key,channel['label'])
         if 'checksum_label' in ch and ch['checksum_label'] in ('sha256','sha1','sha384','sha512'):
             channels.append(ch['label'])
-        elif 'checksum_label':
-            print "unknown checksum "+ch['label']+" please report to maintainer"
+        elif 'checksum_label' in ch:
+            sys.stderr.write("unknown checksum type "+ch['checksum_label']+" for channel "+ch['label']+" please report to maintainer\n")
         else:
-            print "no checksum type - ignoring "+ch['label']
+            sys.stderr.write("no checksum type - ignoring "+ch['label']+"\n")
     return channels
 
 def regen_channel(key,force,channel=None):
