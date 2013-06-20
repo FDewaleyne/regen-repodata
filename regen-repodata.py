@@ -8,10 +8,10 @@
 __author__ = "Felix Dewaleyne"
 __credits__ = ["Felix Dewaleyne"]
 __license__ = "GPL"
-__version__ = "3.0.2"
+__version__ = "3.0.3"
 __maintainer__ = "Felix Dewaleyne"
 __email__ = "fdewaley@redhat.com"
-__status__ = "Dev"
+__status__ = "main"
 
 ##
 # will work for 5.4 and 5.5
