@@ -8,7 +8,7 @@
 __author__ = "Felix Dewaleyne"
 __credits__ = ["Felix Dewaleyne"]
 __license__ = "GPL"
-__version__ = "3.0.3"
+__version__ = "3.0.3b"
 __maintainer__ = "Felix Dewaleyne"
 __email__ = "fdewaley@redhat.com"
 __status__ = "main"
@@ -128,7 +128,7 @@ def regen_channel(key,force,channel=None):
                 pass
         try:
             client.channel.software.regenerateNeededCache(key)
-            print "errata and package cache for all systems has been regenerated"
+            print "The needed cache of all systems has been regenerated"
         except:
             sys.stderr.write("an exception occured durring the regenerateNeededCache call!")
             raise
@@ -136,13 +136,13 @@ def regen_channel(key,force,channel=None):
         print "requesting that the repodata would be regenerated for "+channel
         try:
             client.channel.software.regenerateYumCache(key,channel)
-            print "repodata should regenerate over the next 15 minutes for "+channel
+            print "repodata regeneration requested for "+channel
         except:
             sys.stderr.write( "error trying to request the repodata regeneration for "+channel)
             raise
         try:
             client.channel.software.regenerateNeededCache(key,channel)
-            print "errata and package cache for all systems subscribed to channel "+channel+" has been regenerated"
+            print "The needed cache of all systems subscribed to channel "+channel+" has been regenerated"
         except:
             sys.stderr.write( "an exception occured durring the regenerateNeededCache call!")
             raise
@@ -191,7 +191,7 @@ def regen_channel_db(key,channels=(), clean_db=False):
     #now clean the needed cache to make sure all systems see their updates properly
     try:
         client.channel.software.regenerateNeededCache(key)
-        print "errata and package cache for all systems has been regenerated"
+        print "The needed cache has been regenerated for all systems"
     except:
         sys.stderr.write("an exception occured durring the regenerateNeededCache call!")
         raise 
