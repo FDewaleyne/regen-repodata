@@ -8,7 +8,7 @@
 __author__ = "Felix Dewaleyne"
 __credits__ = ["Felix Dewaleyne"]
 __license__ = "GPL"
-__version__ = "3.0.3b"
+__version__ = "3.0.3c"
 __maintainer__ = "Felix Dewaleyne"
 __email__ = "fdewaley@redhat.com"
 __status__ = "dev"
@@ -204,12 +204,12 @@ def main(version):
     parser.add_option("-c", "--channel", dest="channel", help="Label of the channel to querry regeneration for")
     parser.add_option("-a", "--all", action="store_true",dest="regen_all",help="Causes a global regeneration instead of just one channel")
     parser.add_option("-f", "--force", action="store_true",dest="force_operation",help="Forces the operation ; can only work if the script is run on the satellite itself",default=False)
-    parser.add_option("--db", action="store_true", dest="use_db", help="Use the database instead of the api ; can only be used from the satellite itself. Implies --force",default=False)
-    parser.add_option("--cleandb", action="store_true", dest="clean_db", help="Get rid of the pending actions before adding the new ones. implies --db and force.", default=False)
-    parser.add_option("--url", dest="saturl",default=None, help="URL of the satellite api, e.g. https://satellite.example.com/rpc/api or http://127.0.0.1/rpc/api ; can also be just the hostname or ip of the satellite. Facultative.")
-    parser.add_option("--user", dest="satuser",default=None, help="username to use with the satellite. Should be admin of the organization owning the channels. Faculative.")
-    parser.add_option("--password", dest="satpwd",default=None, help="password of the user. Will be asked if not given and not in the configuration file.")
-    parser.add_option("--org", dest="satorg", default="baseorg", help="name of the organization to use - design the section of the config file to use. Facultative, defaults to %default")
+    connect_group = OptionGroup(parser, "Connection options","Not required unless you want to bypass the details of ~/.satellite, .satellite or /etc/sysconfig/rhn/satellite or simply don't want to be asked the settings at run time"
+    connect_group.add_option("--url", dest="saturl",default=None, help="URL of the satellite api, e.g. https://satellite.example.com/rpc/api or http://127.0.0.1/rpc/api ; can also be just the hostname or ip of the satellite. Facultative.")
+    connect_group.add_option("--user", dest="satuser",default=None, help="username to use with the satellite. Should be admin of the organization owning the channels. Faculative.")
+    connect_group.add_option("--password", dest="satpwd",default=None, help="password of the user. Will be asked if not given and not in the configuration file.")
+    connect_group.add_option("--org", dest="satorg", default="baseorg", help="name of the organization to use - design the section of the config file to use. Facultative, defaults to %default")
+    parser.add_option_group(connect_group)
     (options, args) = parser.parse_args()
     if options.listing:
         key = session_init(options.satorg , {"url" : options.saturl, "login" : options.satuser, "password" : options.satpwd})
