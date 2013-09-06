@@ -96,10 +96,10 @@ def select_channels(key):
     channels = []
     for channel in client.channel.listSoftwareChannels(key):
         ch = client.channel.software.getDetails(key,channel['label'])
-        if 'checksum_label' in ch and ch['checksum_label'] in ('sha256','sha1','sha384','sha512'):
+        #if 'checksum_label' in ch and ch['checksum_label'] in ('sha256','sha1','sha384','sha512'):
+        #updated the test to not use a finite list of checksums but rather only check if there is one
+        if ch.get('checksum_label',None) != None:
             channels.append(ch['label'])
-        elif 'checksum_label' in ch:
-            sys.stderr.write("unknown checksum type "+ch['checksum_label']+" for channel "+ch['label']+" please report to maintainer\n")
         else:
             sys.stderr.write("no checksum type - ignoring "+ch['label']+"\n")
     return channels
@@ -165,6 +165,7 @@ def regen_channel_db(key,channels=(), clean_db=False):
     sys.path.append('/usr/share/rhn/')
     #TODO: replace this by a file read test
     #TODO: use the taskomatic module instead to do the db operation
+    #TODO: make this Satellite 5.6 compatible
     try:
         #import server.repomd.repository as repository
         import server.rhnChannel as rhnChannel
