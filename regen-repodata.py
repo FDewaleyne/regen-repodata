@@ -76,9 +76,11 @@ def session_init(orgname='baseorg', settings={} ):
     del SATELLITE_PASSWORD
     #fetch the version of satellite in use - set to None if this call generates an error
     try:
-        satver = client.api.getSystemVersion()
+        satver = client.api.systemVersion()
+        print "satellite version "+satver
     except:
         satver = None
+        print "unable to detect the version"
         pass
     return key
 
