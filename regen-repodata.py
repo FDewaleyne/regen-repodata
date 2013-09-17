@@ -39,6 +39,7 @@ def session_init(orgname='baseorg', settings={} ):
     global client;
     global config;
     global SATELLITE_LOGIN;
+    global satver;
     if 'url' in settings and not settings['url'] == None:
         SATELLITE_URL = settings['url']
     elif config.has_section('default') and config.has_option('default', 'url'):
@@ -73,6 +74,12 @@ def session_init(orgname='baseorg', settings={} ):
     key = client.auth.login(SATELLITE_LOGIN, SATELLITE_PASSWORD)
     # removes the password from memory
     del SATELLITE_PASSWORD
+    #fetch the version of satellite in use - set to None if this call generates an error
+    try:
+        satver = client.api.getSystemVersion()
+    except:
+        satver = None
+        pass
     return key
 
 def print_channels(key):
@@ -161,6 +168,7 @@ def setback_repomd_timestamp(repocache_path):
 
 def regen_channel_db(key,channels=(), clean_db=False):
     """Inserts into the database the taskomatic jobs. requires to be run on the satellite or import will fail"""
+    global satver;
     import sys
     sys.path.append('/usr/share/rhn/')
     #TODO: replace this by a file read test
@@ -184,10 +192,20 @@ def regen_channel_db(key,channels=(), clean_db=False):
         h = rhnSQL.prepare("DELETE FROM rhnRepoRegenQueue")
         h.execute()
         rhnSQL.commit();
+        #this part should only run on 5.4.0 versions (it will fail on others)
+    #only execute g if need to be cleaned and on 5.4.0 minimum
+    g = rhnSQL.prepare("DELETE FROM rhnPackageRepodata WHERE package_id IN (SELECT  a.package_id FROM rhnChannelPackage a, rhnChannel b WHERE a.channel_id = b.id AND b.label like :channel)")
     h = rhnSQL.prepare("INSERT INTO rhnRepoRegenQueue (id, CHANNEL_LABEL, REASON, BYPASS_FILTERS, FORCE) VALUES (rhn_repo_regen_queue_id_seq.nextval, :channel , 'repodata regeneration script','Y', 'Y')")
-    for label in channels:
-        h.execute(channel=label)
-        print "channel "+label+" has been queued for regeneration"
+    if satver in ('5.4.0', '5.5.0') and clean_db:
+        #this is a satellite of at least version 5.4.0 or 5.5.0
+        for label in channels:
+           g.execute(channel=label)
+           h.execute(channel=label)
+           print "channel "+label+" has been queued for regeneration, previous repodata were cleaned"
+    else:
+        for label in channels:
+            h.execute(channel=label)
+            print "channel "+label+" has been queued for regeneration"
     rhnSQL.commit();
     #now clean the needed cache to make sure all systems see their updates properly
     try:
@@ -197,6 +215,7 @@ def regen_channel_db(key,channels=(), clean_db=False):
         sys.stderr.write("an exception occured durring the regenerateNeededCache call!")
         raise 
     pass
+
 
 def main(version):
     global client;
