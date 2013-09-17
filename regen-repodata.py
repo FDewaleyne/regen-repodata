@@ -203,7 +203,7 @@ def regen_channel_db(key,channels=(), clean_db=False):
         for label in channels:
            g.execute(channel=label)
            h.execute(channel=label)
-           print "channel "+label+" has been queued for regeneration, previous repodata were cleaned"
+           print "channel "+label+" has been queued for regeneration, previous repodata were cleaned from the database"
     else:
         for label in channels:
             h.execute(channel=label)
@@ -225,7 +225,7 @@ def main(version):
     parser.add_option("-l", "--list", dest="listing", help="List all channels and quit", action="store_true")
     parser.add_option("-c", "--channel", dest="channel", help="Label of the channel to querry regeneration for")
     parser.add_option("-a", "--all", action="store_true",dest="regen_all",help="Causes a global regeneration instead of just one channel")
-    # local onlyoptions
+    # local only options
     local_group = optparse.OptionGroup(parser, "Local options", "Require to run the script directly on the satellite if used")
     local_group.add_option("-f", "--force", action="store_true",dest="force_operation",help="Forces the operation ; can only work if the script is run on the satellite itself",default=False)
     local_group.add_option("--db", action="store_true", dest="use_db", help="Use the database instead of the api ; implies --force", default=False)
