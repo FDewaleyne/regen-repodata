@@ -8,7 +8,7 @@
 __author__ = "Felix Dewaleyne"
 __credits__ = ["Felix Dewaleyne"]
 __license__ = "GPL"
-__version__ = "3.0.3c"
+__version__ = "3.1.0"
 __maintainer__ = "Felix Dewaleyne"
 __email__ = "fdewaley@redhat.com"
 __status__ = "dev"
@@ -223,8 +223,14 @@ def main(version):
     parser.add_option("-l", "--list", dest="listing", help="List all channels and quit", action="store_true")
     parser.add_option("-c", "--channel", dest="channel", help="Label of the channel to querry regeneration for")
     parser.add_option("-a", "--all", action="store_true",dest="regen_all",help="Causes a global regeneration instead of just one channel")
-    parser.add_option("-f", "--force", action="store_true",dest="force_operation",help="Forces the operation ; can only work if the script is run on the satellite itself",default=False)
-    connect_group = OptionGroup(parser, "Connection options","Not required unless you want to bypass the details of ~/.satellite, .satellite or /etc/sysconfig/rhn/satellite or simply don't want to be asked the settings at run time"
+    # local onlyoptions
+    local_group = optparse.OptionGroup(parser, "Local options", "Require to run the script directly on the satellite if used")
+    local_group.add_option("-f", "--force", action="store_true",dest="force_operation",help="Forces the operation ; can only work if the script is run on the satellite itself",default=False)
+    local_group.add_option("--db", action="store_true", dest="use_db", help="Use the database instead of the api ; implies --force", default=False)
+    local_group.add_option("--cleandb", action="store_true", dest="clean_db", help="Get rid of the pending actions before adding the new ones ; also deletes existing metadata stored in the database for the channel(s) used (5.4.0+ only). implies --db and --force.", default=False)
+    parser.add_option_group(local_group)
+    # connection options
+    connect_group = optparse.OptionGroup(parser, "Connection options","Not required unless you want to bypass the details of ~/.satellite, .satellite or /etc/sysconfig/rhn/satellite or simply don't want to be asked the settings at run time")
     connect_group.add_option("--url", dest="saturl",default=None, help="URL of the satellite api, e.g. https://satellite.example.com/rpc/api or http://127.0.0.1/rpc/api ; can also be just the hostname or ip of the satellite. Facultative.")
     connect_group.add_option("--user", dest="satuser",default=None, help="username to use with the satellite. Should be admin of the organization owning the channels. Faculative.")
     connect_group.add_option("--password", dest="satpwd",default=None, help="password of the user. Will be asked if not given and not in the configuration file.")
