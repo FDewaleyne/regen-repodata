@@ -17,23 +17,35 @@ Options:
                         Label of the channel to querry regeneration for
   -a, --all             Causes a global regeneration instead of just one
                         channel
-  -f, --force           Forces the operation ; can only work if the script is
+
+  Local options:
+    Require to run the script directly on the satellite if used
+
+    -f, --force         Forces the operation ; can only work if the script is
                         run on the satellite itself
-  --db                  Use the database instead of the api ; can only be used
-                        from the satellite itself. Implies --force
-  --cleandb             Get rid of the pending actions before adding the new
-                        ones. implies --db and force.
-  --url=SATURL          URL of the satellite api, e.g.
+    --db                Use the database instead of the api ; implies --force
+    --cleandb           Get rid of the pending actions before adding the new
+                        ones ; also deletes existing metadata stored in the
+                        database for the channel(s) used (5.4.0+ only).
+                        implies --db and --force.
+
+  Connection options:
+    Not required unless you want to bypass the details of ~/.satellite,
+    .satellite or /etc/sysconfig/rhn/satellite or simply don't want to be
+    asked the settings at run time
+
+    --url=SATURL        URL of the satellite api, e.g.
                         https://satellite.example.com/rpc/api or
                         http://127.0.0.1/rpc/api ; can also be just the
                         hostname or ip of the satellite. Facultative.
-  --user=SATUSER        username to use with the satellite. Should be admin of
+    --user=SATUSER      username to use with the satellite. Should be admin of
                         the organization owning the channels. Faculative.
-  --password=SATPWD     password of the user. Will be asked if not given and
+    --password=SATPWD   password of the user. Will be asked if not given and
                         not in the configuration file.
-  --org=SATORG          name of the organization to use - design the section
+    --org=SATORG        name of the organization to use - design the section
                         of the config file to use. Facultative, defaults to
                         baseorg
+
 ~~~
 **NOTE** : `--db`  still requires access to the api to avoid adding channels that should not be generated (channels with no checksum type)
 
