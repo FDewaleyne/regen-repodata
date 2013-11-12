@@ -8,7 +8,7 @@
 __author__ = "Felix Dewaleyne"
 __credits__ = ["Felix Dewaleyne"]
 __license__ = "GPL"
-__version__ = "3.1.2"
+__version__ = "3.1.2b"
 __maintainer__ = "Felix Dewaleyne"
 __email__ = "fdewaley@redhat.com"
 __status__ = "stable"
@@ -141,13 +141,13 @@ def regen_channel(key,force,channel=None):
                 client.channel.software.regenerateYumCache(key,entry)
                 print "successfully queued "+entry
             except:
-                sys.stderr.write("error trying to request the repodata regeneration for "+entry)
+                sys.stderr.write("error trying to request the repodata regeneration for "+entry+"\n")
                 pass
         try:
             client.channel.software.regenerateNeededCache(key)
             print "The needed cache of all systems has been regenerated"
         except:
-            sys.stderr.write("an exception occured durring the regenerateNeededCache call!")
+            sys.stderr.write("an exception occured durring the regenerateNeededCache call!\n")
             raise
     else:
         print "requesting that the repodata would be regenerated for "+channel
@@ -155,13 +155,13 @@ def regen_channel(key,force,channel=None):
             client.channel.software.regenerateYumCache(key,channel)
             print "repodata regeneration requested for "+channel
         except:
-            sys.stderr.write( "error trying to request the repodata regeneration for "+channel)
+            sys.stderr.write( "error trying to request the repodata regeneration for "+channel+"\n")
             raise
         try:
             client.channel.software.regenerateNeededCache(key,channel)
             print "The needed cache of all systems subscribed to channel "+channel+" has been regenerated"
         except:
-            sys.stderr.write( "an exception occured durring the regenerateNeededCache call!")
+            sys.stderr.write( "an exception occured durring the regenerateNeededCache call!\n")
             raise
  
 def setback_repomd_timestamp(repocache_path):
