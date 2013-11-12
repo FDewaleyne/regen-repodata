@@ -104,14 +104,22 @@ def select_channels(key):
     global client;
     channels = []
     for channel in client.channel.listSoftwareChannels(key):
-        ch = client.channel.software.getDetails(key,channel['label'])
-        #if 'checksum_label' in ch and ch['checksum_label'] in ('sha256','sha1','sha384','sha512'):
-        #updated the test to not use a finite list of checksums but rather only check if there is one
-        if ch.get('checksum_label',None) != None:
+        if validate_channel(key,channel):
             channels.append(ch['label'])
         else:
             sys.stderr.write("no checksum type - ignoring "+ch['label']+"\n")
     return channels
+
+def validate_channel(key,channel):
+    """validates or not the usage of a channel"""
+    ch = client.channel.software.getDetails(key,channel['label'])
+    #if 'checksum_label' in ch and ch['checksum_label'] in ('sha256','sha1','sha384','sha512'):
+    #updated the test to not use a finite list of checksums but rather only check if there is one
+    if ch.get('checksum_label',None) != None:
+        return True
+    else:
+        return False
+
 
 def regen_channel(key,force,channel=None):
     # this should be enough to ask the satellite to regenerate the yum cache - the repodata - but removing the /var/cache/rhn/repodata then running this might give better results (especially if need to force).
