@@ -157,11 +157,11 @@ def regen_channel(key,force,channel=None):
             raise
  
 def setback_repomd_timestamp(repocache_path):
-    repomd_file = (repocache_path + '/repomd.xml')
-    stat_info = os.stat(repomd_file)
-    mtime = stat_info[stat.ST_MTIME]
-    new_mtime = mtime - 3600
     try:
+        repomd_file = (repocache_path + '/repomd.xml')
+        stat_info = os.stat(repomd_file)
+        mtime = stat_info[stat.ST_MTIME]
+        new_mtime = mtime - 3600
         os.utime(repomd_file, (new_mtime, new_mtime))
     except OSError, e:
         sys.stderr.write("error setting back timestamp on %s: %s" % (repomd_file, e.strerror))
