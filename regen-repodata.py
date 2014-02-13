@@ -107,8 +107,9 @@ def select_channels(key):
     for channel in client.channel.listSoftwareChannels(key):
         if validate_channel(key,channel):
             channels.append(channel['label'])
+            print "channel "+channel['label']+" added"
         else:
-            sys.stderr.write("no checksum type - ignoring "+channel['label']+"\n")
+            sys.stderr.write("channel "+channel['label']+" ignored - no checksum type\n")
     return channels
 
 def validate_channel(key,channel):
@@ -213,18 +214,23 @@ def regen_channel_db(key,channels=(), clean_db=False):
         h = rhnSQL.prepare("INSERT INTO rhnRepoRegenQueue (id, CHANNEL_LABEL, REASON, BYPASS_FILTERS, FORCE) VALUES (rhn_repo_regen_queue_id_seq.nextval, :channel , 'repodata regeneration script','Y', 'Y')")
     else:
         h = rhnSQL.prepare("INSERT INTO rhnRepoRegenQueue (id, CHANNEL_LABEL, REASON, BYPASS_FILTERS, FORCE) VALUES (nextval('rhn_repo_regen_queue_id_seq'), :channel , 'repodata regeneration script','Y', 'Y')")
-    if satver in ('5.4.0', '5.5.0', '5.6.0') and clean_db:
+    if satver in ('5.4.0', '5.5.0', '5.6.0'):
         #this is a satellite of at least version 5.4.0, 5.5.0 or 5.6.0
         for label in channels:
-            g.execute(channel=label)
+            if clean_db:
+                g.execute(channel=label) 
+                status = "channel "+label+" has been queued for regeneration, previous repodata were cleaned from the database"
+            else:
+                status =  "channel "+label+" has been queued for regeneration"
             h.execute(channel=label)
+            print status
     elif satver in ('5.3.0', None):
-        #should catch 5.6.0 issues
+        #satellite 5.3.0 and older
         for label in channels:
             h.execute(channel=label)
             print "channel "+label+" has been queued for regeneration"
-            print "channel "+label+" has been queued for regeneration, previous repodata were cleaned from the database"
     else:
+        #satellite after 5.6.0
         #default action : use the api instead. this should be hit when satellite 5.x isn't tested and on test it should have its own version added to either the first function or a new function be created.
         for label in channels:
             regen_channel(key,True,label)
