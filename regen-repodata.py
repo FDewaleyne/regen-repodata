@@ -8,14 +8,15 @@
 __author__ = "Felix Dewaleyne"
 __credits__ = ["Felix Dewaleyne"]
 __license__ = "GPL"
-__version__ = "3.1.1"
+__version__ = "3.2.1"
 __maintainer__ = "Felix Dewaleyne"
 __email__ = "fdewaley@redhat.com"
 __status__ = "dev"
 
 ##
-# will work for 5.4 and 5.5
+# will work for 5.4, 5.5 and 5.6
 # will work for 5.3 only if using the database options (--db --cleandb)
+# database options are compatible with 5.6 thanks to the usage of the python modules to connect to it
 ##
 
 ###
@@ -31,7 +32,7 @@ import stat
 client=None;
 SATELLITE_LOGIN=None;
 config = ConfigParser.ConfigParser()
-config.read(['.satellite', os.path.expanduser('~/.satellite'), '/etc/sysconfig/rhn/satellite'])
+onfig.read(['.satellite', os.path.expanduser('~/.satellite'), '/etc/sysconfig/rhn/satellite'])
 
 # this will initialize a session and return its key.
 # for security reason the password is removed from memory before exit, but we want to keep the current username.
@@ -104,14 +105,23 @@ def select_channels(key):
     global client;
     channels = []
     for channel in client.channel.listSoftwareChannels(key):
-        ch = client.channel.software.getDetails(key,channel['label'])
-        #if 'checksum_label' in ch and ch['checksum_label'] in ('sha256','sha1','sha384','sha512'):
-        #updated the test to not use a finite list of checksums but rather only check if there is one
-        if ch.get('checksum_label',None) != None:
-            channels.append(ch['label'])
+        if validate_channel(key,channel):
+            channels.append(channel['label'])
+            print "channel "+channel['label']+" validated"
         else:
-            sys.stderr.write("no checksum type - ignoring "+ch['label']+"\n")
+            sys.stderr.write("channel "+channel['label']+" ignored - no checksum type\n")
     return channels
+
+def validate_channel(key,channel):
+    """validates or not the usage of a channel"""
+    ch = client.channel.software.getDetails(key,channel['label'])
+    #if 'checksum_label' in ch and ch['checksum_label'] in ('sha256','sha1','sha384','sha512'):
+    #updated the test to not use a finite list of checksums but rather only check if there is one
+    if ch.get('checksum_label',None) != None:
+        return True
+    else:
+        return False
+
 
 def regen_channel(key,force,channel=None):
     # this should be enough to ask the satellite to regenerate the yum cache - the repodata - but removing the /var/cache/rhn/repodata then running this might give better results (especially if need to force).
@@ -133,13 +143,13 @@ def regen_channel(key,force,channel=None):
                 client.channel.software.regenerateYumCache(key,entry)
                 print "successfully queued "+entry
             except:
-                sys.stderr.write("error trying to request the repodata regeneration for "+entry)
+                sys.stderr.write("error trying to request the repodata regeneration for "+entry+"\n")
                 pass
         try:
             client.channel.software.regenerateNeededCache(key)
             print "The needed cache of all systems has been regenerated"
         except:
-            sys.stderr.write("an exception occured durring the regenerateNeededCache call!")
+            sys.stderr.write("an exception occured durring the regenerateNeededCache call!\n")
             raise
     else:
         print "requesting that the repodata would be regenerated for "+channel
@@ -147,21 +157,21 @@ def regen_channel(key,force,channel=None):
             client.channel.software.regenerateYumCache(key,channel)
             print "repodata regeneration requested for "+channel
         except:
-            sys.stderr.write( "error trying to request the repodata regeneration for "+channel)
+            sys.stderr.write( "error trying to request the repodata regeneration for "+channel+"\n")
             raise
         try:
             client.channel.software.regenerateNeededCache(key,channel)
             print "The needed cache of all systems subscribed to channel "+channel+" has been regenerated"
         except:
-            sys.stderr.write( "an exception occured durring the regenerateNeededCache call!")
+            sys.stderr.write( "an exception occured durring the regenerateNeededCache call!\n")
             raise
  
 def setback_repomd_timestamp(repocache_path):
-    repomd_file = (repocache_path + '/repomd.xml')
-    stat_info = os.stat(repomd_file)
-    mtime = stat_info[stat.ST_MTIME]
-    new_mtime = mtime - 3600
     try:
+        repomd_file = (repocache_path + '/repomd.xml')
+        stat_info = os.stat(repomd_file)
+        mtime = stat_info[stat.ST_MTIME]
+        new_mtime = mtime - 3600
         os.utime(repomd_file, (new_mtime, new_mtime))
     except OSError, e:
         sys.stderr.write("error setting back timestamp on %s: %s" % (repomd_file, e.strerror))
@@ -175,7 +185,6 @@ def regen_channel_db(key,channels=(), clean_db=False):
     sys.path.append('/usr/share/rhn/')
     #TODO: replace this by a file read test
     #TODO: use the taskomatic module instead to do the db operation
-    #TODO: make this Satellite 5.6 compatible
     try:
         #import server.repomd.repository as repository
         import server.rhnChannel as rhnChannel
@@ -189,7 +198,10 @@ def regen_channel_db(key,channels=(), clean_db=False):
 
     rhnConfig.initCFG()
     rhnSQL.initDB()
-
+    try:
+        backend = rhnConfig.CFG.DB_BACKEND
+    except:
+        backend = 'oracle'
     if clean_db:
         h = rhnSQL.prepare("DELETE FROM rhnRepoRegenQueue")
         h.execute()
@@ -197,16 +209,31 @@ def regen_channel_db(key,channels=(), clean_db=False):
         #this part should only run on 5.4.0 versions (it will fail on others)
     #only execute g if need to be cleaned and on 5.4.0 minimum
     g = rhnSQL.prepare("DELETE FROM rhnPackageRepodata WHERE package_id IN (SELECT  a.package_id FROM rhnChannelPackage a, rhnChannel b WHERE a.channel_id = b.id AND b.label like :channel)")
-    h = rhnSQL.prepare("INSERT INTO rhnRepoRegenQueue (id, CHANNEL_LABEL, REASON, BYPASS_FILTERS, FORCE) VALUES (rhn_repo_regen_queue_id_seq.nextval, :channel , 'repodata regeneration script','Y', 'Y')")
-    if satver in ('5.4.0', '5.5.0') and clean_db:
-        #this is a satellite of at least version 5.4.0 or 5.5.0
-        for label in channels:
-           g.execute(channel=label)
-           h.execute(channel=label)
-           print "channel "+label+" has been queued for regeneration, previous repodata were cleaned from the database"
+    #this should choose the sql to use between either postgresql or oracle. problem is the way to use sequences changes from one another
+    if backend != 'postgresql':
+        h = rhnSQL.prepare("INSERT INTO rhnRepoRegenQueue (id, CHANNEL_LABEL, REASON, BYPASS_FILTERS, FORCE) VALUES (rhn_repo_regen_queue_id_seq.nextval, :channel , 'repodata regeneration script','Y', 'Y')")
     else:
+        h = rhnSQL.prepare("INSERT INTO rhnRepoRegenQueue (id, CHANNEL_LABEL, REASON, BYPASS_FILTERS, FORCE) VALUES (nextval('rhn_repo_regen_queue_id_seq'), :channel , 'repodata regeneration script','Y', 'Y')")
+    if satver in ('5.4.0', '5.5.0', '5.6.0'):
+        #this is a satellite of at least version 5.4.0, 5.5.0 or 5.6.0
+        for label in channels:
+            if clean_db:
+                g.execute(channel=label) 
+                status = "channel "+label+" has been queued for regeneration, previous repodata were cleaned from the database"
+            else:
+                status =  "channel "+label+" has been queued for regeneration"
+            h.execute(channel=label)
+            print status
+    elif satver in ('5.3.0', None):
+        #satellite 5.3.0 and older
         for label in channels:
             h.execute(channel=label)
+            print "channel "+label+" has been queued for regeneration"
+    else:
+        #satellite after 5.6.0
+        #default action : use the api instead. this should be hit when satellite 5.x isn't tested and on test it should have its own version added to either the first function or a new function be created.
+        for label in channels:
+            regen_channel(key,True,label)
             print "channel "+label+" has been queued for regeneration"
     rhnSQL.commit();
     #now clean the needed cache to make sure all systems see their updates properly
