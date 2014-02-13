@@ -8,7 +8,7 @@
 __author__ = "Felix Dewaleyne"
 __credits__ = ["Felix Dewaleyne"]
 __license__ = "GPL"
-__version__ = "3.2"
+__version__ = "3.2.1"
 __maintainer__ = "Felix Dewaleyne"
 __email__ = "fdewaley@redhat.com"
 __status__ = "stable"
@@ -107,7 +107,7 @@ def select_channels(key):
     for channel in client.channel.listSoftwareChannels(key):
         if validate_channel(key,channel):
             channels.append(channel['label'])
-            print "channel "+channel['label']+" added"
+            print "channel "+channel['label']+" validated"
         else:
             sys.stderr.write("channel "+channel['label']+" ignored - no checksum type\n")
     return channels
