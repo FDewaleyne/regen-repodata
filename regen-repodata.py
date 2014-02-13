@@ -211,7 +211,11 @@ def regen_channel_db(key,channels=(), clean_db=False):
         #this is a satellite of at least version 5.4.0 or 5.5.0
         for label in channels:
            g.execute(channel=label)
-           h.execute(channel=label)
+           if satver in ('5.6.0') :
+                #a quick way to patch the "table rhn_repo_regen_queue_id" problem
+                regen_channel(key,True,label)
+           else:
+                h.execute(channel=label)
            print "channel "+label+" has been queued for regeneration, previous repodata were cleaned from the database"
     else:
         for label in channels:
