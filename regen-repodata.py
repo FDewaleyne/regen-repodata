@@ -207,7 +207,7 @@ def regen_channel_db(key,channels=(), clean_db=False):
     #only execute g if need to be cleaned and on 5.4.0 minimum
     g = rhnSQL.prepare("DELETE FROM rhnPackageRepodata WHERE package_id IN (SELECT  a.package_id FROM rhnChannelPackage a, rhnChannel b WHERE a.channel_id = b.id AND b.label like :channel)")
     h = rhnSQL.prepare("INSERT INTO rhnRepoRegenQueue (id, CHANNEL_LABEL, REASON, BYPASS_FILTERS, FORCE) VALUES (rhn_repo_regen_queue_id_seq.nextval, :channel , 'repodata regeneration script','Y', 'Y')")
-    if satver in ('5.4.0', '5.5.0') and clean_db:
+    if satver in ('5.4.0', '5.5.0', '5.6.0') and clean_db:
         #this is a satellite of at least version 5.4.0 or 5.5.0
         for label in channels:
            g.execute(channel=label)
