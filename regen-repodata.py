@@ -223,7 +223,7 @@ def regen_channel_db(key,channels=(), clean_db=False):
         for label in channels:
             h.execute(channel=label)
             print "channel "+label+" has been queued for regeneration"
-          print "channel "+label+" has been queued for regeneration, previous repodata were cleaned from the database"
+            print "channel "+label+" has been queued for regeneration, previous repodata were cleaned from the database"
     else:
         #default action : use the api instead. this should be hit when satellite 5.x isn't tested and on test it should have its own version added to either the first function or a new function be created.
         for label in channels:
