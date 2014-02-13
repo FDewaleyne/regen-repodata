@@ -14,8 +14,9 @@ __email__ = "fdewaley@redhat.com"
 __status__ = "stable"
 
 ##
-# will work for 5.4 and 5.5
+# will work for 5.4, 5.5 and 5.6
 # will work for 5.3 only if using the database options (--db --cleandb)
+# database options are compatible with 5.6 thanks to the usage of the python modules to connect to it
 ##
 
 ###
