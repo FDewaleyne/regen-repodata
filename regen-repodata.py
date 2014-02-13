@@ -106,9 +106,9 @@ def select_channels(key):
     channels = []
     for channel in client.channel.listSoftwareChannels(key):
         if validate_channel(key,channel):
-            channels.append(ch['label'])
+            channels.append(channel['label'])
         else:
-            sys.stderr.write("no checksum type - ignoring "+ch['label']+"\n")
+            sys.stderr.write("no checksum type - ignoring "+channel['label']+"\n")
     return channels
 
 def validate_channel(key,channel):
