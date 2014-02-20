@@ -8,7 +8,7 @@
 __author__ = "Felix Dewaleyne"
 __credits__ = ["Felix Dewaleyne"]
 __license__ = "GPL"
-__version__ = "3.2.1"
+__version__ = "3.2.2"
 __maintainer__ = "Felix Dewaleyne"
 __email__ = "fdewaley@redhat.com"
 __status__ = "stable"
@@ -214,7 +214,7 @@ def regen_channel_db(key,channels=(), clean_db=False):
         h = rhnSQL.prepare("INSERT INTO rhnRepoRegenQueue (id, CHANNEL_LABEL, REASON, BYPASS_FILTERS, FORCE) VALUES (rhn_repo_regen_queue_id_seq.nextval, :channel , 'repodata regeneration script','Y', 'Y')")
     else:
         h = rhnSQL.prepare("INSERT INTO rhnRepoRegenQueue (id, CHANNEL_LABEL, REASON, BYPASS_FILTERS, FORCE) VALUES (nextval('rhn_repo_regen_queue_id_seq'), :channel , 'repodata regeneration script','Y', 'Y')")
-    if satver in ('5.4.0', '5.5.0', '5.6.0'):
+    if satver in ('5.4.0','5.4.1', '5.5.0', '5.6.0'):
         #this is a satellite of at least version 5.4.0, 5.5.0 or 5.6.0
         for label in channels:
             if clean_db:
