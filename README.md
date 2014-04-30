@@ -3,6 +3,8 @@ regen\-repodata
 
 Script used to cause the events that will trigger a regeneration of repodata in satellite.
 
+a link to download the script from the latest raw is available : [http://bit.ly/regen-repodata](http://bit.ly/regen-repodata)
+
 ~~~
 Usage: regen-repodata.py -c channelname|-l|-a [-f]
  Requests to a satellite that a channel's repodata is regenerated
