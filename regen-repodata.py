@@ -32,7 +32,7 @@ import stat
 client=None;
 SATELLITE_LOGIN=None;
 config = ConfigParser.ConfigParser()
-onfig.read(['.satellite', os.path.expanduser('~/.satellite'), '/etc/sysconfig/rhn/satellite'])
+config.read(['.satellite', os.path.expanduser('~/.satellite'), '/etc/sysconfig/rhn/satellite'])
 
 # this will initialize a session and return its key.
 # for security reason the password is removed from memory before exit, but we want to keep the current username.
