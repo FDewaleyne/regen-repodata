@@ -8,7 +8,7 @@
 __author__ = "Felix Dewaleyne"
 __credits__ = ["Felix Dewaleyne"]
 __license__ = "GPL"
-__version__ = "3.2.2"
+__version__ = "4.0.0"
 __maintainer__ = "Felix Dewaleyne"
 __email__ = "fdewaley@redhat.com"
 __status__ = "dev"
@@ -20,7 +20,7 @@ __status__ = "dev"
 ##
 
 ###
-# To the extent possible under law, Red Hat, Inc. has dedicated all copyright to this software to the public domain worldwide, pursuant to the CC0 Public Domain Dedication. 
+# To the extent possible under law, Red Hat, Inc. has dedicated all copyright to this software to the public domain worldwide, pursuant to the CC0 Public Domain Dedication.
 # This software is distributed without any warranty.  See <http://creativecommons.org/publicdomain/zero/1.0/>.
 ###
 
@@ -29,14 +29,15 @@ import xmlrpclib, sys, getpass, ConfigParser, os, optparse, re
 import stat
 
 #global variables
-client=None;
-SATELLITE_LOGIN=None;
+client = None;
+SATELLITE_LOGIN = None;
 config = ConfigParser.ConfigParser()
 config.read(['.satellite', os.path.expanduser('~/.satellite'), '/etc/sysconfig/rhn/satellite'])
 
 # this will initialize a session and return its key.
 # for security reason the password is removed from memory before exit, but we want to keep the current username.
-def session_init(orgname='baseorg', settings={} ):
+def session_init(orgname='baseorg', settings={}):
+    """initiates the connection to the api"""
     global client;
     global config;
     global SATELLITE_LOGIN;
@@ -44,13 +45,13 @@ def session_init(orgname='baseorg', settings={} ):
     if 'url' in settings and not settings['url'] == None:
         SATELLITE_URL = settings['url']
     elif config.has_section('default') and config.has_option('default', 'url'):
-        SATELLITE_URL = config.get('default','url')
+        SATELLITE_URL = config.get('default', 'url')
     else:
         sys.stderr.write("enter the satellite url, such as https://satellite.example.com/rpc/api")
         sys.stderr.write("\n")
         SATELLITE_URL = raw_input().strip()
     #format the url if a part is missing
-    if re.match('^http(s)?://[\w\-.]+/rpc/api',SATELLITE_URL) == None:
+    if re.match('^http(s)?://[\w\-.]+/rpc/api', SATELLITE_URL) == None:
         if re.search('^http(s)?://', SATELLITE_URL) == None:
             SATELLITE_URL = "https://"+SATELLITE_URL
         if re.search('/rpc/api$', SATELLITE_URL) == None:
@@ -86,16 +87,17 @@ def session_init(orgname='baseorg', settings={} ):
     return key
 
 def print_channels(key):
+    """prints the channels on screen"""
     global client;
     print "Channels:"
-    print ("  %42s | %10s | %s" %  ("Label", "Checksum", "Name"))
+    print "  %42s | %10s | %s" %  ("Label", "Checksum", "Name")
     try:
         for channel in client.channel.listSoftwareChannels(key):
-            details = client.channel.software.getDetails(key,channel['label'])
-            if 'checksum_label' in details :
-                print ("  %42s | %10s | %s" % (channel['label'], details['checksum_label'] ,channel['name']))
+            details = client.channel.software.getDetails(key, channel['label'])
+            if 'checksum_label' in details:
+                print "  %42s | %10s | %s" % (channel['label'], details['checksum_label'], channel['name'])
             else:
-                print ("  %42s | %10s | %s" % (channel['label'], "" ,channel['name']))
+                print "  %42s | %10s | %s" % (channel['label'], "", channel['name'])
     except:
             sys.stderr.write("error trying to list channels")
             raise
@@ -105,42 +107,42 @@ def select_channels(key):
     global client;
     channels = []
     for channel in client.channel.listSoftwareChannels(key):
-        if validate_channel(key,channel):
+        if validate_channel(key, channel):
             channels.append(channel['label'])
             print "channel "+channel['label']+" validated"
         else:
             sys.stderr.write("channel "+channel['label']+" ignored - no checksum type\n")
     return channels
 
-def validate_channel(key,channel):
+def validate_channel(key, channel):
     """validates or not the usage of a channel"""
-    ch = client.channel.software.getDetails(key,channel['label'])
+    ch = client.channel.software.getDetails(key, channel['label'])
     #if 'checksum_label' in ch and ch['checksum_label'] in ('sha256','sha1','sha384','sha512'):
     #updated the test to not use a finite list of checksums but rather only check if there is one
-    if ch.get('checksum_label',None) != None:
+    if ch.get('checksum_label', None) != None:
         return True
     else:
         return False
 
-
-def regen_channel(key,force,channel=None):
+def regen_channel(key, force, channel=None):
+    """queues the regeneration job to the db"""
     # this should be enough to ask the satellite to regenerate the yum cache - the repodata - but removing the /var/cache/rhn/repodata then running this might give better results (especially if need to force).
-    if force: 
+    if force:
         print "removing previous content to force regeneration"
-        import shutil,os
+        import shutil, os
         folder = '/var/cache/rhn/repodata'
         if channel == None:
             for entry in os.listdir(folder):
-                entry_path = os.path.join(folder,entry)
+                entry_path = os.path.join(folder, entry)
                 if os.path.isdir(entry_path):
                     setback_repomd_timestamp(entry_path)
         else:
-            setback_repomd_timestamp(os.path.join(folder,channel))
+            setback_repomd_timestamp(os.path.join(folder, channel))
     if channel == None:
         print "requesting global regeneration of the repodata"
         for entry in select_channels(key):
             try:
-                client.channel.software.regenerateYumCache(key,entry)
+                client.channel.software.regenerateYumCache(key, entry)
                 print "successfully queued "+entry
             except:
                 sys.stderr.write("error trying to request the repodata regeneration for "+entry+"\n")
@@ -154,19 +156,20 @@ def regen_channel(key,force,channel=None):
     else:
         print "requesting that the repodata would be regenerated for "+channel
         try:
-            client.channel.software.regenerateYumCache(key,channel)
+            client.channel.software.regenerateYumCache(key, channel)
             print "repodata regeneration requested for "+channel
         except:
-            sys.stderr.write( "error trying to request the repodata regeneration for "+channel+"\n")
+            sys.stderr.write("error trying to request the repodata regeneration for "+channel+"\n")
             raise
         try:
-            client.channel.software.regenerateNeededCache(key,channel)
+            client.channel.software.regenerateNeededCache(key, channel)
             print "The needed cache of all systems subscribed to channel "+channel+" has been regenerated"
         except:
-            sys.stderr.write( "an exception occured durring the regenerateNeededCache call!\n")
+            sys.stderr.write("an exception occured durring the regenerateNeededCache call!\n")
             raise
- 
+
 def setback_repomd_timestamp(repocache_path):
+    """changes the timestamp of the repodata previously generated rather than delete it"""
     try:
         repomd_file = (repocache_path + '/repomd.xml')
         stat_info = os.stat(repomd_file)
@@ -178,7 +181,7 @@ def setback_repomd_timestamp(repocache_path):
         sys.stderr.write("if the file does not exist ignore this error")
         pass
 
-def regen_channel_db(key,channels=(), clean_db=False):
+def regen_channel_db(key, channels=(), clean_db=False):
     """Inserts into the database the taskomatic jobs. requires to be run on the satellite or import will fail"""
     global satver;
     import sys
@@ -214,14 +217,14 @@ def regen_channel_db(key,channels=(), clean_db=False):
         h = rhnSQL.prepare("INSERT INTO rhnRepoRegenQueue (id, CHANNEL_LABEL, REASON, BYPASS_FILTERS, FORCE) VALUES (rhn_repo_regen_queue_id_seq.nextval, :channel , 'repodata regeneration script','Y', 'Y')")
     else:
         h = rhnSQL.prepare("INSERT INTO rhnRepoRegenQueue (id, CHANNEL_LABEL, REASON, BYPASS_FILTERS, FORCE) VALUES (nextval('rhn_repo_regen_queue_id_seq'), :channel , 'repodata regeneration script','Y', 'Y')")
-    if satver in ('5.4.0','5.4.1', '5.5.0', '5.6.0'):
+    if satver in ('5.4.0', '5.4.1', '5.5.0', '5.6.0'):
         #this is a satellite of at least version 5.4.0, 5.5.0 or 5.6.0
         for label in channels:
             if clean_db:
-                g.execute(channel=label) 
+                g.execute(channel=label)
                 status = "channel "+label+" has been queued for regeneration, previous repodata were cleaned from the database"
             else:
-                status =  "channel "+label+" has been queued for regeneration"
+                status = "channel "+label+" has been queued for regeneration"
             h.execute(channel=label)
             print status
     elif satver in ('5.3.0', None):
@@ -233,7 +236,7 @@ def regen_channel_db(key,channels=(), clean_db=False):
         #satellite after 5.6.0
         #default action : use the api instead. this should be hit when satellite 5.x isn't tested and on test it should have its own version added to either the first function or a new function be created.
         for label in channels:
-            regen_channel(key,True,label)
+            regen_channel(key, True, label)
             print "channel "+label+" has been queued for regeneration"
     rhnSQL.commit();
     #now clean the needed cache to make sure all systems see their updates properly
@@ -242,54 +245,55 @@ def regen_channel_db(key,channels=(), clean_db=False):
         print "The needed cache has been regenerated for all systems"
     except:
         sys.stderr.write("an exception occured durring the regenerateNeededCache call!")
-        raise 
+        raise
     pass
 
 
 def main(version):
+    """the main functoin of the program"""
     global client;
     parser = optparse.OptionParser("%prog -c channelname|-l|-a [-f]\n Requests to a satellite that a channel's repodata is regenerated\n satellite 5.3 requires that you use --db or --cleandb\n RHEL4 channels (and anterior) do not need their repodata to be generated to work.", version=version)
     parser.add_option("-l", "--list", dest="listing", help="List all channels and quit", action="store_true")
     parser.add_option("-c", "--channel", dest="channel", help="Label of the channel to querry regeneration for")
-    parser.add_option("-a", "--all", action="store_true",dest="regen_all",help="Causes a global regeneration instead of just one channel")
+    parser.add_option("-a", "--all", action="store_true", dest="regen_all", help="Causes a global regeneration instead of just one channel")
     # local only options
     local_group = optparse.OptionGroup(parser, "Local options", "Require to run the script directly on the satellite if used")
-    local_group.add_option("-f", "--force", action="store_true",dest="force_operation",help="Forces the operation ; can only work if the script is run on the satellite itself",default=False)
+    local_group.add_option("-f", "--force", action="store_true", dest="force_operation", help="Forces the operation ; can only work if the script is run on the satellite itself", default=False)
     local_group.add_option("--db", action="store_true", dest="use_db", help="Use the database instead of the api ; implies --force", default=False)
     local_group.add_option("--cleandb", action="store_true", dest="clean_db", help="Get rid of the pending actions before adding the new ones ; also deletes existing metadata stored in the database for the channel(s) used (5.4.0+ only). implies --db and --force.", default=False)
     parser.add_option_group(local_group)
     # connection options
-    connect_group = optparse.OptionGroup(parser, "Connection options","Not required unless you want to bypass the details of ~/.satellite, .satellite or /etc/sysconfig/rhn/satellite or simply don't want to be asked the settings at run time")
-    connect_group.add_option("--url", dest="saturl",default=None, help="URL of the satellite api, e.g. https://satellite.example.com/rpc/api or http://127.0.0.1/rpc/api ; can also be just the hostname or ip of the satellite. Facultative.")
-    connect_group.add_option("--user", dest="satuser",default=None, help="username to use with the satellite. Should be admin of the organization owning the channels. Faculative.")
-    connect_group.add_option("--password", dest="satpwd",default=None, help="password of the user. Will be asked if not given and not in the configuration file.")
+    connect_group = optparse.OptionGroup(parser, "Connection options", "Not required unless you want to bypass the details of ~/.satellite, .satellite or /etc/sysconfig/rhn/satellite or simply don't want to be asked the settings at run time")
+    connect_group.add_option("--url", dest="saturl", default=None, help="URL of the satellite api, e.g. https://satellite.example.com/rpc/api or http://127.0.0.1/rpc/api ; can also be just the hostname or ip of the satellite. Facultative.")
+    connect_group.add_option("--user", dest="satuser", default=None, help="username to use with the satellite. Should be admin of the organization owning the channels. Faculative.")
+    connect_group.add_option("--password", dest="satpwd", default=None, help="password of the user. Will be asked if not given and not in the configuration file.")
     connect_group.add_option("--org", dest="satorg", default="baseorg", help="name of the organization to use - design the section of the config file to use. Facultative, defaults to %default")
     parser.add_option_group(connect_group)
     (options, args) = parser.parse_args()
     if options.listing:
-        key = session_init(options.satorg , {"url" : options.saturl, "login" : options.satuser, "password" : options.satpwd})
+        key = session_init(options.satorg, {"url" : options.saturl, "login" : options.satuser, "password" : options.satpwd})
         print_channels(key)
         client.auth.logout(key)
     elif options.use_db or options.clean_db:
         if not options.channel and not options.regen_all:
             parser.error('no channel mentioned')
         elif options.regen_all:
-            key = session_init(options.satorg , {"url" : options.saturl, "login" : options.satuser, "password" : options.satpwd})
-            regen_channel_db(key,select_channels(key), options.clean_db)
+            key = session_init(options.satorg, {"url" : options.saturl, "login" : options.satuser, "password" : options.satpwd})
+            regen_channel_db(key, select_channels(key), options.clean_db)
         else:
-            key = session_init(options.satorg , {"url" : options.saturl, "login" : options.satuser, "password" : options.satpwd})
-            regen_channel_db(key,[options.channel],options.clean_db)
+            key = session_init(options.satorg, {"url" : options.saturl, "login" : options.satuser, "password" : options.satpwd})
+            regen_channel_db(key, [options.channel], options.clean_db)
     elif options.regen_all:
-        key = session_init(options.satorg , {"url" : options.saturl, "login" : options.satuser, "password" : options.satpwd})
-        regen_channel(key,options.force_operation)
+        key = session_init(options.satorg, {"url" : options.saturl, "login" : options.satuser, "password" : options.satpwd})
+        regen_channel(key, options.force_operation)
         client.auth.logout(key)
     elif options.channel:
-        key = session_init(options.satorg , {"url" : options.saturl, "login" : options.satuser, "password" : options.satpwd})
-        regen_channel(key,options.force_operation,options.channel)
+        key = session_init(options.satorg, {"url" : options.saturl, "login" : options.satuser, "password" : options.satpwd})
+        regen_channel(key, options.force_operation, options.channel)
         client.auth.logout(key)
     else:
         parser.error('no action given')
 
 #calls start here
-if __name__=="__main__":
+if __name__ == "__main__":
     main(__version__)
