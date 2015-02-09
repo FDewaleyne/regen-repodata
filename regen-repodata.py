@@ -86,6 +86,31 @@ def session_init(orgname='baseorg', settings={}):
         pass
     return key
 
+def db_init():
+    """initializes the db connection"""
+    #global access - not a good idea but that'll have to do for now.
+    global rhnSQL;
+    global rhnChannel;
+    global rhnConfig;
+    global satver;
+    import sys
+    sys.path.append('/usr/share/rhn/')
+    #TODO: replace this by a file read test
+    #TODO: use the taskomatic module instead to do the db operation
+    try:
+        #import server.repomd.repository as repository
+        import server.rhnChannel as rhnChannel
+        import common.rhnConfig as rhnConfig
+        import server.rhnSQL as rhnSQL
+    except ImportError:
+        # this changed for 5.5
+        import spacewalk.server.rhnChannel as rhnChannel
+        import spacewalk.common.rhnConfig as rhnConfig
+        import spacewalk.server.rhnSQL as rhnSQL
+    rhnConfig.initCFG("web")
+    rhnSQL.initDB()
+    satver = rhnConfig.CFG.VERSION
+
 def print_channels(key):
     """prints the channels on screen"""
     global client;
@@ -113,6 +138,17 @@ def select_channels(key):
         else:
             sys.stderr.write("channel "+channel['label']+" ignored - no checksum type\n")
     return channels
+
+def select_channels_db():
+    """returns all the channels that have a checksum type"""
+    global rhnConfig
+    global rhnSQL
+    global rhnChannel
+    h = rhnSQL.prepare("SELECT label FROM rhnchanneel WHERE checksum_type_id IS NOT NULL")
+    h.execute()
+    channels = []
+    for entry in h.fetchall_dict():
+        channels.append(entry['label'])
 
 def validate_channel(key, channel):
     """validates or not the usage of a channel"""
@@ -184,23 +220,9 @@ def setback_repomd_timestamp(repocache_path):
 def regen_channel_db(key, channels=(), clean_db=False):
     """Inserts into the database the taskomatic jobs. requires to be run on the satellite or import will fail"""
     global satver;
-    import sys
-    sys.path.append('/usr/share/rhn/')
-    #TODO: replace this by a file read test
-    #TODO: use the taskomatic module instead to do the db operation
-    try:
-        #import server.repomd.repository as repository
-        import server.rhnChannel as rhnChannel
-        import common.rhnConfig as rhnConfig
-        import server.rhnSQL as rhnSQL
-    except ImportError:
-        # this changed for 5.5
-        import spacewalk.server.rhnChannel as rhnChannel
-        import spacewalk.common.rhnConfig as rhnConfig
-        import spacewalk.server.rhnSQL as rhnSQL
-
-    rhnConfig.initCFG()
-    rhnSQL.initDB()
+    global rhnConfig
+    global rhnSQL
+    global rhnChannel
     try:
         backend = rhnConfig.CFG.DB_BACKEND
     except:
@@ -236,6 +258,7 @@ def regen_channel_db(key, channels=(), clean_db=False):
         #satellite after 5.6.0
         #default action : use the api instead. this should be hit when satellite 5.x isn't tested and on test it should have its own version added to either the first function or a new function be created.
         for label in channels:
+            print "satellite version %s, switching to api" % (satver)
             regen_channel(key, True, label)
             print "channel "+label+" has been queued for regeneration"
     rhnSQL.commit();
@@ -278,11 +301,13 @@ def main(version):
         if not options.channel and not options.regen_all:
             parser.error('no channel mentioned')
         elif options.regen_all:
-            key = session_init(options.satorg, {"url" : options.saturl, "login" : options.satuser, "password" : options.satpwd})
-            regen_channel_db(key, select_channels(key), options.clean_db)
+            db_init()
+            regen_channel_db(key, select_channels_db(), options.clean_db)
+            rhnSQL.closeDB()
         else:
-            key = session_init(options.satorg, {"url" : options.saturl, "login" : options.satuser, "password" : options.satpwd})
+            db_init()
             regen_channel_db(key, [options.channel], options.clean_db)
+            rhnSQL.closeDB()
     elif options.regen_all:
         key = session_init(options.satorg, {"url" : options.saturl, "login" : options.satuser, "password" : options.satpwd})
         regen_channel(key, options.force_operation)
