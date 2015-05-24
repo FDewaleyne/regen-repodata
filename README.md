@@ -30,6 +30,8 @@ Options:
                         ones ; also deletes existing metadata stored in the
                         database for the channel(s) used (5.4.0+ only).
                         implies --db and --force.
+    --cleancache        Cleans the needed cache and exits. Useful after
+                        running against --db
 
   Connection options:
     Not required unless you want to bypass the details of ~/.satellite,
@@ -47,7 +49,6 @@ Options:
     --org=SATORG        name of the organization to use - design the section
                         of the config file to use. Facultative, defaults to
                         baseorg
-
 ~~~
 **NOTE** : `--db`  still requires access to the api to avoid adding channels that should not be generated (channels with no checksum type)
 
