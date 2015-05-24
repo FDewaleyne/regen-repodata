@@ -50,9 +50,7 @@ Options:
                         of the config file to use. Facultative, defaults to
                         baseorg
 ~~~
-**NOTE** : `--db`  still requires access to the api to avoid adding channels that should not be generated (channels with no checksum type)
-
-**NOTE2** : it is possible to store the connection credentials in a configuration file : `.satellite` or `~/.satellite` or `/etc/sysconfig/rhn/satellite`.
+**NOTE** : it is possible to store the connection credentials in a configuration file : `.satellite` or `~/.satellite` or `/etc/sysconfig/rhn/satellite`.
 
 the format of the file should be
 
@@ -62,4 +60,4 @@ the format of the file should be
     username=satellitelogin
     password=satellitepassword
 
-note that the content in `[baseorg]` isn't required ; if `[default]` is missing the configuration file will be ignored.
+Please note that the content in `[baseorg]` isn't required ; if `[default]` is missing the configuration file will be ignored.
