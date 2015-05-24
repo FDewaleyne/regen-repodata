@@ -8,7 +8,7 @@
 __author__ = "Felix Dewaleyne"
 __credits__ = ["Felix Dewaleyne"]
 __license__ = "GPL"
-__version__ = "4.0.0"
+__version__ = "4.0.1"
 __maintainer__ = "Felix Dewaleyne"
 __email__ = "fdewaley@redhat.com"
 __status__ = "stable"
@@ -163,13 +163,13 @@ def validate_channel(key, channel):
 
 def validate_channels_db(o_channels=()):
     """validates the channels given in argument"""
-    channels = set( o_channels )
-    valid_channels = set( select_channels_db() )
+    channels = set(o_channels)
+    valid_channels = set(select_channels_db())
     #the difference is the set of channels that have no checksum
     for invalid_channel in channels.difference( valid_channels ):
         print "channel %s does not have a checksum" % ( invalid_channel )
     #return the intersection (channels that have a checksum)
-    return list(channels.intersection( valid_channels ))
+    return list(channels.intersection(valid_channels))
 
 
 
@@ -230,7 +230,7 @@ def setback_repomd_timestamp(repocache_path):
         sys.stderr.write("if the file does not exist ignore this error")
         pass
 
-def regen_channel_db(key, channels=(), clean_db=False):
+def regen_channel_db(channels=(), clean_db=False):
     """Inserts into the database the taskomatic jobs. requires to be run on the satellite or import will fail"""
     global satver;
     global rhnConfig
@@ -272,11 +272,15 @@ def regen_channel_db(key, channels=(), clean_db=False):
         #default action : use the api instead. this should be hit when satellite 5.x isn't tested and on test it should have its own version added to either the first function or a new function be created.
         for label in channels:
             print "satellite version %s, switching to api" % (satver)
+            key = session_init("baseorg", {})
             regen_channel(key, True, label)
             print "channel "+label+" has been queued for regeneration"
     rhnSQL.commit();
     #now clean the needed cache to make sure all systems see their updates properly
+    #still requires the api.
     try:
+        print "clearing the cache of updates still requires the api"
+        key = session_init("baseorg", {})
         client.channel.software.regenerateNeededCache(key)
         print "The needed cache has been regenerated for all systems"
     except:
@@ -315,11 +319,11 @@ def main(version):
             parser.error('no channel mentioned')
         elif options.regen_all:
             db_init()
-            regen_channel_db(key, select_channels_db(), options.clean_db)
+            regen_channel_db(select_channels_db(), options.clean_db)
             rhnSQL.closeDB()
         else:
             db_init()
-            regen_channel_db(key, validate_channels_db(options.channel), options.clean_db)
+            regen_channel_db(validate_channels_db(options.channel), options.clean_db)
             rhnSQL.closeDB()
     elif options.regen_all:
         key = session_init(options.satorg, {"url" : options.saturl, "login" : options.satuser, "password" : options.satpwd})
