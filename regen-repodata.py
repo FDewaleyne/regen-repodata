@@ -8,7 +8,7 @@
 __author__ = "Felix Dewaleyne"
 __credits__ = ["Felix Dewaleyne"]
 __license__ = "GPL"
-__version__ = "4.0.1"
+__version__ = "4.0.2"
 __maintainer__ = "Felix Dewaleyne"
 __email__ = "fdewaley@redhat.com"
 __status__ = "stable"
@@ -144,7 +144,7 @@ def select_channels_db():
     global rhnConfig
     global rhnSQL
     global rhnChannel
-    h = rhnSQL.prepare("SELECT label FROM rhnchanneel WHERE checksum_type_id IS NOT NULL")
+    h = rhnSQL.prepare("SELECT label FROM rhnchannel WHERE checksum_type_id IS NOT NULL")
     h.execute()
     channels = []
     for entry in h.fetchall_dict():
@@ -276,17 +276,10 @@ def regen_channel_db(channels=(), clean_db=False):
             regen_channel(key, True, label)
             print "channel "+label+" has been queued for regeneration"
     rhnSQL.commit();
-    #now clean the needed cache to make sure all systems see their updates properly
-    #still requires the api.
-    try:
-        print "clearing the cache of updates still requires the api"
-        key = session_init("baseorg", {})
-        client.channel.software.regenerateNeededCache(key)
-        print "The needed cache has been regenerated for all systems"
-    except:
-        sys.stderr.write("an exception occured durring the regenerateNeededCache call!")
-        raise
-    pass
+    #moving needed cache cleaning to another option
+    print "Finished queueing the new jobs into the database"
+    print "Restart taskomatic and schedule the 'channel-repodata-bunch' task once to continue"
+    print "Clear the needed cache if your systems display incorrect update counts afterwards (option --cleancache)"
 
 
 def main(version):
@@ -301,6 +294,7 @@ def main(version):
     local_group.add_option("-f", "--force", action="store_true", dest="force_operation", help="Forces the operation ; can only work if the script is run on the satellite itself", default=False)
     local_group.add_option("--db", action="store_true", dest="use_db", help="Use the database instead of the api ; implies --force", default=False)
     local_group.add_option("--cleandb", action="store_true", dest="clean_db", help="Get rid of the pending actions before adding the new ones ; also deletes existing metadata stored in the database for the channel(s) used (5.4.0+ only). implies --db and --force.", default=False)
+    local_group.add_option("--cleancache", action="store_true", dest="clean_cache", help="Cleans the needed cache and exits. Useful after running against --db", default=False)
     parser.add_option_group(local_group)
     # connection options
     connect_group = optparse.OptionGroup(parser, "Connection options", "Not required unless you want to bypass the details of ~/.satellite, .satellite or /etc/sysconfig/rhn/satellite or simply don't want to be asked the settings at run time")
@@ -313,6 +307,11 @@ def main(version):
     if options.listing:
         key = session_init(options.satorg, {"url" : options.saturl, "login" : options.satuser, "password" : options.satpwd})
         print_channels(key)
+        client.auth.logout(key)
+    elif options.clean_cache:
+        key = session_init(options.satorg, {"url" : options.saturl, "login" : options.satuser, "password" : options.satpwd})
+        client.channel.software.regenerateNeededCache(key)
+        print "The needed cache has been regenerated for all systems"
         client.auth.logout(key)
     elif options.use_db or options.clean_db:
         if not options.channel and not options.regen_all:
