@@ -149,6 +149,7 @@ def select_channels_db():
     channels = []
     for entry in h.fetchall_dict():
         channels.append(entry['label'])
+    return channels
 
 def validate_channel(key, channel):
     """validates or not the usage of a channel"""
@@ -159,6 +160,18 @@ def validate_channel(key, channel):
         return True
     else:
         return False
+
+def validate_channels_db(o_channels=()):
+    """validates the channels given in argument"""
+    channels = set( o_channels )
+    valid_channels = set( select_channels_db() )
+    #the difference is the set of channels that have no checksum
+    for invalid_channel in channels.difference( valid_channels ):
+        print "channel %s does not have a checksum" % ( invalid_channel )
+    #return the intersection (channels that have a checksum)
+    return list(channels.intersection( valid_channels ))
+
+
 
 def regen_channel(key, force, channel=None):
     """queues the regeneration job to the db"""
@@ -306,7 +319,7 @@ def main(version):
             rhnSQL.closeDB()
         else:
             db_init()
-            regen_channel_db(key, [options.channel], options.clean_db)
+            regen_channel_db(key, validate_channels_db(options.channel), options.clean_db)
             rhnSQL.closeDB()
     elif options.regen_all:
         key = session_init(options.satorg, {"url" : options.saturl, "login" : options.satuser, "password" : options.satpwd})
