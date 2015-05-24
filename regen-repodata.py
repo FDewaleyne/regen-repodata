@@ -11,7 +11,7 @@ __license__ = "GPL"
 __version__ = "4.0.0"
 __maintainer__ = "Felix Dewaleyne"
 __email__ = "fdewaley@redhat.com"
-__status__ = "prod"
+__status__ = "stable"
 
 ##
 # will work for 5.4, 5.5 and 5.6
