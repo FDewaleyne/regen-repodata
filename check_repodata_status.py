@@ -116,7 +116,6 @@ def get_repomd_date(channel):
         #there is no repodata
         return None
 
-
 def parse_cache(key, channel):
     """checks that a given channel is in the repodata cache & get the last build date, outputing the info"""
     global client
@@ -131,6 +130,7 @@ def define_channels(key):
     """pulls all the software channels into a global list with their id associated. Only uses the list of channels and the info that can be pulled from it."""
     global client
     global channels
+
     #TBC
 
 def main(version):
