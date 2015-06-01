@@ -14,9 +14,7 @@ __email__ = "fdewaley@redhat.com"
 __status__ = "dev"
 
 ##
-# will work for 5.4, 5.5 and 5.6
-# will work for 5.3 only if using the database options (--db --cleandb)
-# database options are compatible with 5.6 thanks to the usage of the python modules to connect to it
+# will work for 5.6+
 ##
 
 ###
@@ -37,10 +35,10 @@ config.read(['.satellite', os.path.expanduser('~/.satellite'), '/etc/sysconfig/r
 # for security reason the password is removed from memory before exit, but we want to keep the current username.
 def session_init(orgname='baseorg', settings={}):
     """initiates the connection to the api"""
-    global client;
-    global config;
-    global SATELLITE_LOGIN;
-    global satver;
+    global client
+    global config
+    global SATELLITE_LOGIN
+    global satver
     if 'url' in settings and not settings['url'] == None:
         SATELLITE_URL = settings['url']
     elif config.has_section('default') and config.has_option('default', 'url'):
@@ -97,7 +95,7 @@ def validate_channel(key, channel):
 
 def select_channels(key):
     """Selects all channels that aren't RHEL4 or RHEL3 or don't have no checksum defined"""
-    global client;
+    global client
     channels = []
     for channel in client.channel.listSoftwareChannels(key):
         if validate_channel(key, channel):
@@ -109,21 +107,35 @@ def select_channels(key):
 
 def get_repomd_date(channel):
     """returns the date of the repomd file"""
-    path = "/var/cache/rhn/repodata/%s/repomd.xml" % (channel)
+    repo_path = "/var/cache/rhn/repodata/%s/repomd.xml" % (channel)
+    if os.path.isfile(repo_path):
+        if os.path.isfile(repo_path+".new"):
+            print "repodata is being created for %s" % (channel)
+        return os.path.getmtime(repo_path)
+    else:
+        #there is no repodata
+        return None
 
-    
 
-def parse_channel(key, channel):
+def parse_cache(key, channel):
     """checks that a given channel is in the repodata cache & get the last build date, outputing the info"""
-    global client;
-    global channels;
+    global client
+    global channels
     db_build_date = client.channel.software.getChannelLastBuildById(key, channels['label'])
     repomd_date = get_repomd_date(channel)
+    #TBC
     
+#global definition added with this script
+channels = {}
+def define_channels(key):
+    """pulls all the software channels into a global list with their id associated. Only uses the list of channels and the info that can be pulled from it."""
+    global client
+    global channels
+    #TBC
 
 def main(version):
     """the main functoin of the program"""
-    global client;
+    global client
     parser = optparse.OptionParser("%prog [-c channelname]\n Checks the last date the repodata was generated at for a channel or for all the channels.\nNeeds to be ran from he satellite itself.", version=version)
     parser.add_option("-c", "--channel", dest="channel", help="Label of the channel to querry regeneration for")
     # connection options
